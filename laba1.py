@@ -200,7 +200,7 @@ def find_nearest_class(classes_list, o1, func_dist_to_class, func_dist_point_to_
     return nearest_class[0]
 
 
-def input_choose_method_dict():
+def input_choose_function_dict():
     """
     Возвращает метод вычисления расстрояния между двумя объектами
     :return: function
@@ -220,6 +220,26 @@ def input_choose_method_dict():
     return method.get(get_input())
 
 
+def input_choose_method_dict():
+    """
+    Возвращает метод вычисления расстрояния между двумя объектами
+    :return: function
+    """
+    def get_input():
+        print("Выберите метод вычисления расстрояния между объектом и классом:")
+        print("1. Расстояние до центроида класса")
+        print("2. Найменше з значень відстані до усіх еталонів класу(«найближчий сусід»)")
+        obj_to_obj_method = int(input())
+        if obj_to_obj_method not in [1, 2]:
+            return get_input()
+        else:
+            return str(obj_to_obj_method)
+    method = {'1': get_distance_to_centroid,
+              '2': get_distance_to_nearest_neighbor}
+
+    return method.get(get_input())
+
+
 fig1 = plt.figure()
 ax = fig1.add_subplot(projection='3d')
 ax.scatter(class1[:, 0], class1[:, 1], class1[:, 2], c='r', label='class 1')
@@ -229,29 +249,6 @@ ax.scatter(class4[:, 0], class4[:, 1], class4[:, 2], c='m', label='class 4', mar
 
 ax.scatter(MY_X, MY_Y, MY_Z, c='k', label='new point', marker='p')
 ax.legend()
-
-# пользовательский ввод методов
-# while True:
-#     print("Выберите метод вычисления расстрояния между двумя объектами в двумерном пространстве:")
-#     print("1. Евклидово расстояния")
-#     print("2. Расстрояние Минковского")
-#     obj_to_obj_method = int(input())
-#     if obj_to_obj_method not in [1, 2]:
-#         continue
-#     else:
-#         break
-#
-# while True:
-#     print("Выберите метод вычисления расстрояния между объектом и классом:")
-#     print("1. Расстояние до центроида класса")
-#     print("2. Найменше з значень відстані до усіх еталонів класу(«найближчий сусід»)")
-#     obj_to_class_method = int(input())
-#     if obj_to_class_method not in [1, 2]:
-#         continue
-#     else:
-#         break
-
-# plt.show()
 
 indices = np.arange(0, 12, 2)
 
