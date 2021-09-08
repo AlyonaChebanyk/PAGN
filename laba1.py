@@ -103,12 +103,11 @@ class4 = np.array([[3.7, 3.7, 9.3],
                    [4.7, 2.3, 10.2],
                    [3.4, 3.5, 9.9]])
 
-
 class_colors = {
-    1: 'r',
-    2: 'b',
-    3: 'g',
-    4: 'm'
+    '1': 'r',
+    '2': 'b',
+    '3': 'g',
+    '4': 'y'
 }
 
 
@@ -182,7 +181,7 @@ def get_distance_to_nearest_neighbor(o1, class_points, distance_fun, *args):
     return distance
 
 
-def find_nearest_class(classes_list, o1, func_dist_to_class, func_dist_point_to_point) -> int:
+def find_nearest_class(classes_list, o1, func_dist_to_class, func_dist_point_to_point) -> dict:
     """
     Определяет класс к которому относиться объект, возвращает номер класса
     :param classes_list: список классов
@@ -191,13 +190,13 @@ def find_nearest_class(classes_list, o1, func_dist_to_class, func_dist_point_to_
     :param func_dist_point_to_point: метод вычисления расстояния между точками
     :return: номер класса
     """
-    list_of_distances = [
-        func_dist_to_class(o1, class_, func_dist_point_to_point) for class_ in classes_list
-    ]
-    enumerated_list = list(enumerate(list_of_distances, 1))
-    nearest_dist = min(list_of_distances)
-    nearest_class = [n for n, dist in enumerated_list if dist == nearest_dist]
-    return nearest_class[0]
+    list_of_distances = sorted(
+        {
+            class_name: func_dist_to_class(o1, class_points, func_dist_point_to_point)
+            for class_name, class_points in classes_list.items()
+        }.items(),
+        key=lambda value: value[1])
+    return dict(list_of_distances)
 
 
 def input_choose_function_dict():
@@ -205,6 +204,7 @@ def input_choose_function_dict():
     Возвращает метод вычисления расстрояния между двумя объектами
     :return: function
     """
+
     def get_input():
         print("Выберите метод вычисления расстрояния между двумя объектами в двумерном пространстве:")
         print("1. Евклидово расстояния")
@@ -214,6 +214,7 @@ def input_choose_function_dict():
             return get_input()
         else:
             return str(obj_to_obj_method)
+
     method = {'1': euclid_dist,
               '2': minkovsky_dist}
 
@@ -222,9 +223,10 @@ def input_choose_function_dict():
 
 def input_choose_method_dict():
     """
-    Возвращает метод вычисления расстрояния между двумя объектами
+    Возвращает метод вычисления расстрояния между объектом и классом
     :return: function
     """
+
     def get_input():
         print("Выберите метод вычисления расстрояния между объектом и классом:")
         print("1. Расстояние до центроида класса")
@@ -234,6 +236,7 @@ def input_choose_method_dict():
             return get_input()
         else:
             return str(obj_to_obj_method)
+
     method = {'1': get_distance_to_centroid,
               '2': get_distance_to_nearest_neighbor}
 
@@ -242,25 +245,24 @@ def input_choose_method_dict():
 
 fig1 = plt.figure()
 ax = fig1.add_subplot(projection='3d')
-ax.scatter(class1[:, 0], class1[:, 1], class1[:, 2], c='r', label='class 1')
-ax.scatter(class2[:, 0], class2[:, 1], class2[:, 2], c='b', label='class 2', marker='^')
-ax.scatter(class3[:, 0], class3[:, 1], class3[:, 2], c='g', label='class 3', marker='s')
-ax.scatter(class4[:, 0], class4[:, 1], class4[:, 2], c='m', label='class 4', marker='d')
+ax.scatter(class1[:, 0], class1[:, 1], class1[:, 2], c=class_colors.get('1'), label='class 1')
+ax.scatter(class2[:, 0], class2[:, 1], class2[:, 2], c=class_colors.get('2'), label='class 2', marker='^')
+ax.scatter(class3[:, 0], class3[:, 1], class3[:, 2], c=class_colors.get('3'), label='class 3', marker='s')
+ax.scatter(class4[:, 0], class4[:, 1], class4[:, 2], c=class_colors.get('4'), label='class 4', marker='d')
 
 ax.scatter(MY_X, MY_Y, MY_Z, c='k', label='new point', marker='p')
 ax.legend()
 
-indices = np.arange(0, 12, 2)
+indices = np.arange(0, 12, 0.5)
 
 fig2 = plt.figure()
 ax = fig2.add_subplot(projection='3d')
-class_list = [class1, class2, class3, class4]
+class_list = {'1': class1, '2': class2, '3': class3, '4': class4}
 i = 0
 for x in indices:
     for y in indices:
         for z in indices:
-            nearest_class = find_nearest_class(class_list, (x, y, z), get_distance_to_centroid, euclid_dist)
-            # class_dots[nearest_class].append([x, y, z])
+            nearest_class = find_nearest_class(class_list, (x, y, z), get_distance_to_centroid, euclid_dist).__iter__().__next__()
             ax.scatter(x, y, z, c=class_colors[nearest_class], alpha=0.2, s=20)
             i += 1
             if (i % 100) == 0:
