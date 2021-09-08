@@ -2,7 +2,6 @@
 # -*- coding: UTF-8 -*-
 import sys
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 import argparse
 
@@ -13,12 +12,14 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-x', type=int)
 parser.add_argument('-y', type=int)
 parser.add_argument('-z', type=int)
+parser.add_argument('-obj_to_obj_method', type=int)
+parser.add_argument('-obj_to_class_method', type=int)
 args = parser.parse_args(sys.argv[1:])
 print(args)
 MY_X = args.x
 MY_Y = args.y
 MY_Z = args.z
-print(MY_X, MY_Y, MY_Z)
+# print(MY_X, MY_Y, MY_Z)
 
 class1 = np.array([[2.6, 3.3, 3.7],
                    [3.2, 3.8, 2.7],
@@ -212,58 +213,57 @@ def find_nearest_class(classes_list, o1, func_dist_to_class, func_dist_point_to_
 
 
 fig1 = plt.figure()
-ax = fig1.gca(projection='3d')
+ax = fig1.add_subplot(projection='3d')
 ax.scatter(class1[:, 0], class1[:, 1], class1[:, 2], c='r', label='class 1')
 ax.scatter(class2[:, 0], class2[:, 1], class2[:, 2], c='b', label='class 2', marker='^')
 ax.scatter(class3[:, 0], class3[:, 1], class3[:, 2], c='g', label='class 3', marker='s')
 ax.scatter(class4[:, 0], class4[:, 1], class4[:, 2], c='m', label='class 4', marker='d')
 
-try:
+# try:
     # print("Enter coordinates:\t")
     # x = float(input('x: '))
     # y = float(input('y: '))
     # z = float(input('z: '))
-    ax.scatter(MY_X, MY_Y, MY_Z, c='k', label='new point', marker='p')
-except ValueError:
-    print("\nError")
+# except ValueError:
+#     print("\nError")
+ax.scatter(MY_X, MY_Y, MY_Z, c='k', label='new point', marker='p')
 ax.legend()
 
 # пользовательский ввод методов
-while True:
-    print("Выберите метод вычисления расстрояния между двумя объектами в двумерном пространстве:")
-    print("1. Евклидово расстояния")
-    print("2. Расстрояние Минковского")
-    objToObjMethod = int(input())
-    if objToObjMethod not in [1, 2]:
-        continue
-    else:
-        break
-
-while True:
-    print("Выберите метод вычисления расстрояния между объектом и классом:")
-    print("1. Расстояние до центроида класса")
-    print("2. Найменше з значень відстані до усіх еталонів класу(«найближчий сусід»)")
-    objToClassMethod = int(input())
-    if objToClassMethod not in [1, 2]:
-        continue
-    else:
-        break
+# while True:
+#     print("Выберите метод вычисления расстрояния между двумя объектами в двумерном пространстве:")
+#     print("1. Евклидово расстояния")
+#     print("2. Расстрояние Минковского")
+#     obj_to_obj_method = int(input())
+#     if obj_to_obj_method not in [1, 2]:
+#         continue
+#     else:
+#         break
+#
+# while True:
+#     print("Выберите метод вычисления расстрояния между объектом и классом:")
+#     print("1. Расстояние до центроида класса")
+#     print("2. Найменше з значень відстані до усіх еталонів класу(«найближчий сусід»)")
+#     obj_to_class_method = int(input())
+#     if obj_to_class_method not in [1, 2]:
+#         continue
+#     else:
+#         break
 
 # plt.show()
 
-indices = np.arange(0, 11, 0.5)
+indices = np.arange(0, 12, 2)
 
 fig2 = plt.figure()
-ax = fig2.gca(projection='3d')
+ax = fig2.add_subplot(projection='3d')
 class_list = [class1, class2, class3, class4]
-print()
 i = 0
 for x in indices:
     for y in indices:
         for z in indices:
             nearest_class = find_nearest_class(class_list, (x, y, z), get_distance_to_centroid, euclid_dist)
             # class_dots[nearest_class].append([x, y, z])
-            ax.scatter(x, y, z, c=class_colors[nearest_class], alpha=0.1)
+            ax.scatter(x, y, z, c=class_colors[nearest_class], alpha=0.2, s=20)
             i += 1
             if (i % 100) == 0:
                 print(str(i / ((11 / 0.1) ** 3)), end='\r')
