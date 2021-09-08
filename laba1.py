@@ -9,17 +9,15 @@ L = 3
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('-x', type=int)
-parser.add_argument('-y', type=int)
-parser.add_argument('-z', type=int)
+parser.add_argument('-x', type=int, help="X-coordinate")
+parser.add_argument('-y', type=int, help="Y-coordinate")
+parser.add_argument('-z', type=int, help="Z-coordinate")
 parser.add_argument('-obj_to_obj_method', type=int)
 parser.add_argument('-obj_to_class_method', type=int)
 args = parser.parse_args(sys.argv[1:])
-print(args)
 MY_X = args.x
 MY_Y = args.y
 MY_Z = args.z
-# print(MY_X, MY_Y, MY_Z)
 
 class1 = np.array([[2.6, 3.3, 3.7],
                    [3.2, 3.8, 2.7],
@@ -106,6 +104,14 @@ class4 = np.array([[3.7, 3.7, 9.3],
                    [3.4, 3.5, 9.9]])
 
 
+class_colors = {
+    1: 'r',
+    2: 'b',
+    3: 'g',
+    4: 'm'
+}
+
+
 def minkovsky_dist(o1, o2, k=L):
     """
     Функция для нахождения расстояния Минковского между двумя точками
@@ -176,24 +182,6 @@ def get_distance_to_nearest_neighbor(o1, class_points, distance_fun, *args):
     return distance
 
 
-class_colors = {
-    1: 'r',
-    2: 'b',
-    3: 'g',
-    4: 'm'
-}
-
-# print("Расстояние Минковского:")
-# print(minkovsky_dist(class1[0], class2[0], 4))
-# print("Эвклидово расстояние:")
-# print(euclid_dist(class1[0], class2[0]))
-#
-# print("Расстояние до центроида:")
-# print(get_distance_to_centroid(class1[0], class2, euclid_dist))
-# print("Расстояние до ближайшего соседа:")
-# print(get_distance_to_nearest_neighbor(class1[0], class2, minkovsky_dist))
-
-
 def find_nearest_class(classes_list, o1, func_dist_to_class, func_dist_point_to_point) -> int:
     """
     Определяет класс к которому относиться объект, возвращает номер класса
@@ -212,6 +200,26 @@ def find_nearest_class(classes_list, o1, func_dist_to_class, func_dist_point_to_
     return nearest_class[0]
 
 
+def input_choose_method_dict():
+    """
+    Возвращает метод вычисления расстрояния между двумя объектами
+    :return: function
+    """
+    def get_input():
+        print("Выберите метод вычисления расстрояния между двумя объектами в двумерном пространстве:")
+        print("1. Евклидово расстояния")
+        print("2. Расстрояние Минковского")
+        obj_to_obj_method = int(input())
+        if obj_to_obj_method not in [1, 2]:
+            return get_input()
+        else:
+            return str(obj_to_obj_method)
+    method = {'1': euclid_dist,
+              '2': minkovsky_dist}
+
+    return method.get(get_input())
+
+
 fig1 = plt.figure()
 ax = fig1.add_subplot(projection='3d')
 ax.scatter(class1[:, 0], class1[:, 1], class1[:, 2], c='r', label='class 1')
@@ -219,13 +227,6 @@ ax.scatter(class2[:, 0], class2[:, 1], class2[:, 2], c='b', label='class 2', mar
 ax.scatter(class3[:, 0], class3[:, 1], class3[:, 2], c='g', label='class 3', marker='s')
 ax.scatter(class4[:, 0], class4[:, 1], class4[:, 2], c='m', label='class 4', marker='d')
 
-# try:
-    # print("Enter coordinates:\t")
-    # x = float(input('x: '))
-    # y = float(input('y: '))
-    # z = float(input('z: '))
-# except ValueError:
-#     print("\nError")
 ax.scatter(MY_X, MY_Y, MY_Z, c='k', label='new point', marker='p')
 ax.legend()
 
