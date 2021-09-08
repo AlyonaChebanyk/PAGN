@@ -106,13 +106,13 @@ class4 = np.array([[3.7, 3.7, 9.3],
 
 
 def minkovsky_dist(o1, o2, k=L):
-    '''
+    """
     Функция для нахождения расстояния Минковского между двумя точками
     :param o1: координаты первой точки
     :param o2: координаты второй точки
     :param k: коэффициент
     :return: расстояние между точками о1 и о2
-    '''
+    """
     if not isinstance(k, int) or k < 2:
         raise ValueError("k should be integer, k>2")
     dx = abs(o1[0] - o2[0]) ** k
@@ -122,12 +122,12 @@ def minkovsky_dist(o1, o2, k=L):
 
 
 def euclid_dist(o1, o2):
-    '''
+    """
     Функция для нахождения расстояния Эвклида между двумя точками
     :param o1: координаты первой точки
     :param o2: координаты второй точки
     :return: расстояние между точками о1 и о2
-    '''
+    """
     dx = (o1[0] - o2[0]) ** 2
     dy = (o1[1] - o2[1]) ** 2
     dz = (o1[2] - o2[2]) ** 2
@@ -182,26 +182,26 @@ class_colors = {
     4: 'm'
 }
 
-print("Расстояние Минковского:")
-print(minkovsky_dist(class1[0], class2[0], 4))
-print("Эвклидово расстояние:")
-print(euclid_dist(class1[0], class2[0]))
-
-print("Расстояние до центроида:")
-print(get_distance_to_centroid(class1[0], class2, euclid_dist))
-print("Расстояние до ближайшего соседа:")
-print(get_distance_to_nearest_neighbor(class1[0], class2, minkovsky_dist))
+# print("Расстояние Минковского:")
+# print(minkovsky_dist(class1[0], class2[0], 4))
+# print("Эвклидово расстояние:")
+# print(euclid_dist(class1[0], class2[0]))
+#
+# print("Расстояние до центроида:")
+# print(get_distance_to_centroid(class1[0], class2, euclid_dist))
+# print("Расстояние до ближайшего соседа:")
+# print(get_distance_to_nearest_neighbor(class1[0], class2, minkovsky_dist))
 
 
 def find_nearest_class(classes_list, o1, func_dist_to_class, func_dist_point_to_point) -> int:
-    '''
+    """
     Определяет класс к которому относиться объект, возвращает номер класса
     :param classes_list: список классов
     :param o1: координаты точки
     :param func_dist_to_class: метод вычисления расстояния между точкой и классом
     :param func_dist_point_to_point: метод вычисления расстояния между точками
     :return: номер класса
-    '''
+    """
     list_of_distances = [
         func_dist_to_class(o1, class_, func_dist_point_to_point) for class_ in classes_list
     ]
@@ -217,6 +217,7 @@ ax.scatter(class1[:, 0], class1[:, 1], class1[:, 2], c='r', label='class 1')
 ax.scatter(class2[:, 0], class2[:, 1], class2[:, 2], c='b', label='class 2', marker='^')
 ax.scatter(class3[:, 0], class3[:, 1], class3[:, 2], c='g', label='class 3', marker='s')
 ax.scatter(class4[:, 0], class4[:, 1], class4[:, 2], c='m', label='class 4', marker='d')
+
 try:
     # print("Enter coordinates:\t")
     # x = float(input('x: '))
@@ -226,6 +227,28 @@ try:
 except ValueError:
     print("\nError")
 ax.legend()
+
+# пользовательский ввод методов
+while True:
+    print("Выберите метод вычисления расстрояния между двумя объектами в двумерном пространстве:")
+    print("1. Евклидово расстояния")
+    print("2. Расстрояние Минковского")
+    objToObjMethod = int(input())
+    if objToObjMethod not in [1, 2]:
+        continue
+    else:
+        break
+
+while True:
+    print("Выберите метод вычисления расстрояния между объектом и классом:")
+    print("1. Расстояние до центроида класса")
+    print("2. Найменше з значень відстані до усіх еталонів класу(«найближчий сусід»)")
+    objToClassMethod = int(input())
+    if objToClassMethod not in [1, 2]:
+        continue
+    else:
+        break
+
 # plt.show()
 
 indices = np.arange(0, 11, 0.5)
@@ -243,7 +266,7 @@ for x in indices:
             ax.scatter(x, y, z, c=class_colors[nearest_class], alpha=0.1)
             i += 1
             if (i % 100) == 0:
-                # print(str(i / ((11 / 0.1) ** 3)), end='\r')
-                print(i)
+                print(str(i / ((11 / 0.1) ** 3)), end='\r')
+                # print(i)
 
 plt.show()
