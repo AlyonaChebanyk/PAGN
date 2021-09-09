@@ -10,25 +10,24 @@ L = 3
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('-x1', type=float, help="X-coordinate")
-parser.add_argument('-y1', type=float, help="Y-coordinate")
-parser.add_argument('-z1', type=float, help="Z-coordinate")
-parser.add_argument('-x2', type=float, help="X-coordinate")
-parser.add_argument('-y2', type=float, help="Y-coordinate")
-parser.add_argument('-z2', type=float, help="Z-coordinate")
-parser.add_argument('-x3', type=float, help="X-coordinate")
-parser.add_argument('-y3', type=float, help="Y-coordinate")
-parser.add_argument('-z3', type=float, help="Z-coordinate")
-args = parser.parse_args(sys.argv[1:])
-x_1 = args.x1
-y_1 = args.y1
-z_1 = args.z1
-x_2 = args.x2
-y_2 = args.y2
-z_2 = args.z2
-x_3 = args.x3
-y_3 = args.y3
-z_3 = args.z3
+parser.add_argument('--first_point', type=float, help="first point -coordinate", default=None, nargs='+')
+parser.add_argument('--second_point', type=float, help="second point -coordinate", default=None, nargs='+')
+parser.add_argument('--third_point', type=float, help="third point -coordinate", default=None, nargs='+')
+parser.add_argument('--dist', type=str, choices=['1', '2'],
+                    help="Choose dist (1. Евклидово расстояния, 2. Расстрояние Минковского", default=None, )
+parser.add_argument('--distance_to', type=str, choices=['1', '2'],
+                    help="Choose distance_to (1. Расстояние до центроида класса, 2. Найменше з значень відстані "
+                         "до усіх еталонів класу(«найближчий сусід»))",
+                    default=None, )
+
+namespace = parser.parse_args(sys.argv[1:])
+
+if namespace.first_point and len(namespace.first_point) != 3:
+    raise ValueError('Некорректные координаты первой точки')
+if namespace.second_point and len(namespace.second_point) != 3:
+    raise ValueError('Некорректные координаты второй точки')
+if namespace.third_point and len(namespace.third_point) != 3:
+    raise ValueError('Некорректные координаты третьей точки')
 
 class1 = np.array([[2.6, 3.3, 3.7],
                    [3.2, 3.8, 2.7],
@@ -158,10 +157,10 @@ def get_centroid(class_points):
     :param class_points: список координат точек класса
     :return: координаты центроида класса
     """
-    x = class_points[:, 0]
-    y = class_points[:, 1]
-    z = class_points[:, 2]
-    return [sum(x) / len(class_points), sum(y) / len(class_points), sum(z) / len(class_points)]
+    _x = class_points[:, 0]
+    _y = class_points[:, 1]
+    _z = class_points[:, 2]
+    return [sum(_x) / len(class_points), sum(_y) / len(class_points), sum(_z) / len(class_points)]
 
 
 def get_distance_to_centroid(o1, class_points, distance_fun, *args):
@@ -210,61 +209,59 @@ def find_nearest_class(classes_list, o1, func_dist_to_class, func_dist_point_to_
     return dict(list_of_distances)
 
 
-def input_choose_method_obj_to_obj():
+def input_choose_method_obj_to_obj(dist=None):
     """
     Возвращает метод вычисления расстрояния между двумя объектами
     :return: function
     """
 
     def get_input():
-        print("Выберите метод вычисления расстрояния между двумя объектами в двумерном пространстве:")
         print("1. Евклидово расстояния")
         print("2. Расстрояние Минковского")
         obj_to_obj_method = int(input())
-        if obj_to_obj_method not in [1, 2]:
-            return get_input()
-        else:
-            return str(obj_to_obj_method)
+        return get_input() if obj_to_obj_method not in [1, 2] else str(obj_to_obj_method)
 
+    print("Выберите метод вычисления расстрояния между двумя объектами в двумерном пространстве:")
     method = {'1': euclid_dist,
               '2': minkovsky_dist}
+    _dist = dist if dist else get_input()
+    print("Евклидово расстояния") if _dist == '1' else print("Расстрояние Минковского")
+    return method.get(_dist)
 
-    return method.get(get_input())
 
-
-def input_choose_method_obj_to_class():
+def input_choose_method_obj_to_class(distance_to=None):
     """
     Возвращает метод вычисления расстрояния между объектом и классом
     :return: function
     """
 
     def get_input():
-        print("Выберите метод вычисления расстрояния между объектом и классом:")
         print("1. Расстояние до центроида класса")
         print("2. Найменше з значень відстані до усіх еталонів класу(«найближчий сусід»)")
         obj_to_class_method = int(input())
-        if obj_to_class_method not in [1, 2]:
-            return get_input()
-        else:
-            return str(obj_to_class_method)
+        return get_input() if obj_to_class_method not in [1, 2] else str(obj_to_class_method)
 
+    print("Выберите метод вычисления расстрояния между объектом и классом:")
     method = {'1': get_distance_to_centroid,
               '2': get_distance_to_nearest_neighbor}
 
-    return method.get(get_input())
+    _distance_to = distance_to if distance_to else get_input()
+    print("Расстояние до центроида класса") if _distance_to == '1' else print("Найменше з значень відстані до усіх "
+                                                                              "еталонів класу(«найближчий сусід»)")
+    return method.get(_distance_to)
 
 
-def input_new_point(message="Введите координаты точки:\t"):
+def input_new_point(message=None):
     """
     Функция для ввода координат точки
     :return: function
     """
-    print(message)
+    print("Введите координаты точки " + message + ":\t")
     try:
-        x = float(input("x: "))
-        y = float(input("y: "))
-        z = float(input("z: "))
-        return x, y, z
+        _x = float(input("x: "))
+        _y = float(input("y: "))
+        _z = float(input("z: "))
+        return _x, _y, _z
     except ValueError:
         print("Value error")
         input_new_point(message)
@@ -304,15 +301,16 @@ def standardize(class_list, new_points=None):
 
     return class_list, new_points
 
-obj_to_obj_method = euclid_dist
-obj_to_class_method = get_distance_to_centroid
 
-x_1, y_1, z_1 = input_new_point("Введите координаты первой точки:\t")
-x_2, y_2, z_2 = input_new_point("Введите координаты второй точки:\t")
-x_3, y_3, z_3 = input_new_point("Введите координаты третьей точки:\t")
+x_1, y_1, z_1 = namespace.first_point if namespace.first_point else input_new_point("№1")
+print(f"Координаты первой точки: ({x_1}, {y_1}, {z_1})")
+x_2, y_2, z_2 = namespace.second_point if namespace.second_point else input_new_point("№2")
+print(f"Координаты второй точки: ({x_2}, {y_2}, {z_2})")
+x_3, y_3, z_3 = namespace.third_point if namespace.third_point else input_new_point("№3")
+print(f"Координаты третьей точки: ({x_3}, {y_3}, {z_3})")
 
-input_choose_method_obj_to_obj()
-input_choose_method_obj_to_class()
+my_obj_to_obj_method = input_choose_method_obj_to_obj(namespace.dist)
+my_obj_to_class_method = input_choose_method_obj_to_class(namespace.distance_to)
 
 # отображение классов на графике без стандартизации признаков
 fig_classes_no_standardization = plt.figure()
@@ -342,8 +340,9 @@ ax.set_ylabel('y')
 ax.set_zlabel('z')
 
 # стандартизация признаков
-(class1, class2, class3, class4), ((x_1, y_1, z_1), (x_2, y_2, z_2), (x_3, y_3, z_3)) = standardize(class_list=np.array([class1, class2, class3, class4]),
-                                             new_points=np.array([[x_1, y_1, z_1], [x_2, y_2, z_2], [x_3, y_3, z_3]]))
+(class1, class2, class3, class4), ((x_1, y_1, z_1), (x_2, y_2, z_2), (x_3, y_3, z_3)) = standardize(
+    class_list=np.array([class1, class2, class3, class4]),
+    new_points=np.array([[x_1, y_1, z_1], [x_2, y_2, z_2], [x_3, y_3, z_3]]))
 
 # отображение классов на графике после стандартизации признаков
 fig_classes_with_standardization = plt.figure()
@@ -384,14 +383,17 @@ ax.set_xlabel('x')
 ax.set_ylabel('y')
 ax.set_zlabel('z')
 
-class_list = {'1': class1, '2': class2, '3': class3, '4': class4}
-point_1_class = find_nearest_class(class_list, (x_1, y_1, z_1), obj_to_class_method, obj_to_obj_method).__iter__().__next__()
+my_class_list = {'1': class1, '2': class2, '3': class3, '4': class4}
+point_1_class = find_nearest_class(my_class_list, (x_1, y_1, z_1), my_obj_to_class_method,
+                                   my_obj_to_obj_method).__iter__().__next__()
 ax.scatter(x_1, y_1, z_1, c=class_colors[point_1_class], marker='p')
 
-point_2_class = find_nearest_class(class_list, (x_2, y_2, z_2), obj_to_class_method, obj_to_obj_method).__iter__().__next__()
+point_2_class = find_nearest_class(my_class_list, (x_2, y_2, z_2), my_obj_to_class_method,
+                                   my_obj_to_obj_method).__iter__().__next__()
 ax.scatter(x_2, y_2, z_2, c=class_colors[point_2_class], marker='p')
 
-point_3_class = find_nearest_class(class_list, (x_3, y_3, z_3), obj_to_class_method, obj_to_obj_method).__iter__().__next__()
+point_3_class = find_nearest_class(my_class_list, (x_3, y_3, z_3), my_obj_to_class_method,
+                                   my_obj_to_obj_method).__iter__().__next__()
 ax.scatter(x_3, y_3, z_3, c=class_colors[point_3_class], marker='p')
 ax.set_xlabel('x')
 ax.set_ylabel('y')
@@ -405,8 +407,8 @@ i = 0
 for x in indices:
     for y in indices:
         for z in indices:
-            nearest_class = find_nearest_class(class_list, (x, y, z), obj_to_class_method,
-                                               obj_to_obj_method).__iter__().__next__()
+            nearest_class = find_nearest_class(my_class_list, (x, y, z), my_obj_to_class_method,
+                                               my_obj_to_obj_method).__iter__().__next__()
             ax.scatter(x, y, z, c=class_colors[nearest_class], alpha=0.15)
             i += 1
             if (i % 100) == 0:
