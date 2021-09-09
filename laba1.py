@@ -2,6 +2,7 @@
 # -*- coding: UTF-8 -*-
 import sys
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 import argparse
 
@@ -9,9 +10,9 @@ L = 3
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('-x', type=int, help="X-coordinate")
-parser.add_argument('-y', type=int, help="Y-coordinate")
-parser.add_argument('-z', type=int, help="Z-coordinate")
+parser.add_argument('-x', type=float, help="X-coordinate")
+parser.add_argument('-y', type=float, help="Y-coordinate")
+parser.add_argument('-z', type=float, help="Z-coordinate")
 parser.add_argument('-obj_to_obj_method', type=int)
 parser.add_argument('-obj_to_class_method', type=int)
 args = parser.parse_args(sys.argv[1:])
@@ -243,6 +244,30 @@ def input_choose_method_dict():
     return method.get(get_input())
 
 
+def standardize(class_list):
+    """
+    Выполняет стандартизацию признаков
+    :param class_list: список классов
+    :return:
+    """
+    x_max_value = max(np.concatenate(class_list)[:, 0])
+    x_min_value = min(np.concatenate(class_list)[:, 0])
+    y_max_value = max(np.concatenate(class_list)[:, 1])
+    y_min_value = min(np.concatenate(class_list)[:, 1])
+    z_max_value = max(np.concatenate(class_list)[:, 2])
+    z_min_value = min(np.concatenate(class_list)[:, 2])
+
+    for class_ in class_list:
+        for point in class_:
+            point[0] = (point[0] - x_min_value)/(x_max_value - x_min_value)
+            point[1] = (point[1] - y_min_value) / (y_max_value - y_min_value)
+            point[2] = (point[2] - z_min_value)/(z_max_value - z_min_value)
+
+    return class_list
+
+
+class1, class2, class3, class4 = standardize(class_list=np.array([class1, class2, class3, class4]))
+
 fig1 = plt.figure()
 ax = fig1.add_subplot(projection='3d')
 ax.scatter(class1[:, 0], class1[:, 1], class1[:, 2], c=class_colors.get('1'), label='class 1')
@@ -253,7 +278,7 @@ ax.scatter(class4[:, 0], class4[:, 1], class4[:, 2], c=class_colors.get('4'), la
 ax.scatter(MY_X, MY_Y, MY_Z, c='k', label='new point', marker='p')
 ax.legend()
 
-indices = np.arange(0, 12, 0.5)
+indices = np.arange(0, 1, 0.05)
 
 fig2 = plt.figure()
 ax = fig2.add_subplot(projection='3d')
@@ -263,7 +288,7 @@ for x in indices:
     for y in indices:
         for z in indices:
             nearest_class = find_nearest_class(class_list, (x, y, z), get_distance_to_centroid, euclid_dist).__iter__().__next__()
-            ax.scatter(x, y, z, c=class_colors[nearest_class], alpha=0.2, s=20)
+            ax.scatter(x, y, z, c=class_colors[nearest_class], alpha=0.15)
             i += 1
             if (i % 100) == 0:
                 print(str(i / ((11 / 0.1) ** 3)), end='\r')
