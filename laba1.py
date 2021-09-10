@@ -6,7 +6,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 import argparse
 
-L = 3
+L = 5
 
 parser = argparse.ArgumentParser()
 
@@ -119,6 +119,20 @@ class_colors = {
     '3': 'g',
     '4': 'y'
 }
+
+class_markers = {
+    '1': 'o',
+    '2': '^',
+    '3': 's',
+    '4': 'd'
+}
+
+
+def check_value(*args):
+    for val in args:
+        if val < -5 or val > 15:
+            return False
+    return True
 
 
 def minkovsky_dist(o1, o2, k=L):
@@ -237,7 +251,7 @@ def input_choose_method_obj_to_class(distance_to=None):
 
     def get_input():
         print("1. Расстояние до центроида класса")
-        print("2. Найменше з значень відстані до усіх еталонів класу(«найближчий сусід»)")
+        print("2. Найменшее из значений расстояния ко всем еталонам класса («ближайший сосед»)")
         obj_to_class_method = int(input())
         return get_input() if obj_to_class_method not in [1, 2] else str(obj_to_class_method)
 
@@ -246,8 +260,8 @@ def input_choose_method_obj_to_class(distance_to=None):
               '2': get_distance_to_nearest_neighbor}
 
     _distance_to = distance_to if distance_to else get_input()
-    print("Расстояние до центроида класса") if _distance_to == '1' else print("Найменше з значень відстані до усіх "
-                                                                              "еталонів класу(«найближчий сусід»)")
+    print("Расстояние до центроида класса") if _distance_to == '1' else print("Наименьшее из значений расстояния ко всем "
+                                                                              "эталонам класса («ближайший сосед»)")
     return method.get(_distance_to)
 
 
@@ -261,7 +275,11 @@ def input_new_point(message=None):
         _x = float(input("x: "))
         _y = float(input("y: "))
         _z = float(input("z: "))
-        return _x, _y, _z
+        if check_value(_x, _y, _z):
+            return _x, _y, _z
+        else:
+            print("Value error")
+            return input_new_point(message)
     except ValueError:
         print("Value error")
         input_new_point(message)
@@ -302,11 +320,29 @@ def standardize(class_list, new_points=None):
     return class_list, new_points
 
 
-x_1, y_1, z_1 = namespace.first_point if namespace.first_point else input_new_point("№1")
+def display_classes(class_list):
+    class1 = class_list[0]
+    class2 = class_list[1]
+    class3 = class_list[2]
+    class4 = class_list[3]
+    ax.scatter(class1[:, 0], class1[:, 1], class1[:, 2], c=class_colors.get('1'), marker=class_markers['1'],
+               label='class 1')
+    ax.scatter(class2[:, 0], class2[:, 1], class2[:, 2], c=class_colors.get('2'), marker=class_markers['2'],
+               label='class 2')
+    ax.scatter(class3[:, 0], class3[:, 1], class3[:, 2], c=class_colors.get('3'), marker=class_markers['3'],
+               label='class 3')
+    ax.scatter(class4[:, 0], class4[:, 1], class4[:, 2], c=class_colors.get('4'), marker=class_markers['4'],
+               label='class 4')
+
+
+obj_to_obj_method = euclid_dist
+obj_to_class_method = get_distance_to_centroid
+
+x_1, y_1, z_1 = namespace.first_point if check_value(*namespace.first_point) else input_new_point("№1")
 print(f"Координаты первой точки: ({x_1}, {y_1}, {z_1})")
-x_2, y_2, z_2 = namespace.second_point if namespace.second_point else input_new_point("№2")
+x_2, y_2, z_2 = namespace.second_point if check_value(*namespace.second_point) else input_new_point("№2")
 print(f"Координаты второй точки: ({x_2}, {y_2}, {z_2})")
-x_3, y_3, z_3 = namespace.third_point if namespace.third_point else input_new_point("№3")
+x_3, y_3, z_3 = namespace.third_point if check_value(*namespace.third_point) else input_new_point("№3")
 print(f"Координаты третьей точки: ({x_3}, {y_3}, {z_3})")
 
 my_obj_to_obj_method = input_choose_method_obj_to_obj(namespace.dist)
@@ -315,10 +351,8 @@ my_obj_to_class_method = input_choose_method_obj_to_class(namespace.distance_to)
 # отображение классов на графике без стандартизации признаков
 fig_classes_no_standardization = plt.figure()
 ax = fig_classes_no_standardization.add_subplot(projection='3d')
-ax.scatter(class1[:, 0], class1[:, 1], class1[:, 2], c=class_colors.get('1'), label='class 1')
-ax.scatter(class2[:, 0], class2[:, 1], class2[:, 2], c=class_colors.get('2'), label='class 2', marker='^')
-ax.scatter(class3[:, 0], class3[:, 1], class3[:, 2], c=class_colors.get('3'), label='class 3', marker='s')
-ax.scatter(class4[:, 0], class4[:, 1], class4[:, 2], c=class_colors.get('4'), label='class 4', marker='d')
+ax.set_title('Отображение 4 классов в начальном пространстве', pad=25)
+display_classes([class1, class2, class3, class4])
 ax.legend()
 ax.set_xlabel('x')
 ax.set_ylabel('y')
@@ -327,42 +361,35 @@ ax.set_zlabel('z')
 # отображение новых точек на графике
 fig_classes_no_standardization_new_points = plt.figure()
 ax = fig_classes_no_standardization_new_points.add_subplot(projection='3d')
-ax.scatter(class1[:, 0], class1[:, 1], class1[:, 2], c=class_colors.get('1'), label='class 1')
-ax.scatter(class2[:, 0], class2[:, 1], class2[:, 2], c=class_colors.get('2'), label='class 2', marker='^')
-ax.scatter(class3[:, 0], class3[:, 1], class3[:, 2], c=class_colors.get('3'), label='class 3', marker='s')
-ax.scatter(class4[:, 0], class4[:, 1], class4[:, 2], c=class_colors.get('4'), label='class 4', marker='d')
-ax.scatter(x_1, y_1, z_1, c='k', label='new point 1', marker='p')
-ax.scatter(x_2, y_2, z_2, c='k', label='new point 2', marker='p')
-ax.scatter(x_3, y_3, z_3, c='k', label='new point 3', marker='p')
+ax.set_title('Отображение неизвестных объектов в начальном пространстве', pad=25)
+display_classes([class1, class2, class3, class4])
+ax.scatter(x_1, y_1, z_1, c='k', label='x 1', marker='p')
+ax.scatter(x_2, y_2, z_2, c='k', label='x 2', marker='p')
+ax.scatter(x_3, y_3, z_3, c='k', label='x 3', marker='p')
 ax.legend()
 ax.set_xlabel('x')
 ax.set_ylabel('y')
 ax.set_zlabel('z')
-
+#
 # стандартизация признаков
-(class1, class2, class3, class4), ((x_1, y_1, z_1), (x_2, y_2, z_2), (x_3, y_3, z_3)) = standardize(
-    class_list=np.array([class1, class2, class3, class4]),
-    new_points=np.array([[x_1, y_1, z_1], [x_2, y_2, z_2], [x_3, y_3, z_3]]))
+(class1, class2, class3, class4), ((x_1, y_1, z_1), (x_2, y_2, z_2), (x_3, y_3, z_3)) = standardize(class_list=np.array([class1, class2, class3, class4]),
+                                             new_points=np.array([[x_1, y_1, z_1], [x_2, y_2, z_2], [x_3, y_3, z_3]]))
 
 # отображение классов на графике после стандартизации признаков
 fig_classes_with_standardization = plt.figure()
 ax = fig_classes_with_standardization.add_subplot(projection='3d')
-ax.scatter(class1[:, 0], class1[:, 1], class1[:, 2], c=class_colors.get('1'), label='class 1')
-ax.scatter(class2[:, 0], class2[:, 1], class2[:, 2], c=class_colors.get('2'), label='class 2', marker='^')
-ax.scatter(class3[:, 0], class3[:, 1], class3[:, 2], c=class_colors.get('3'), label='class 3', marker='s')
-ax.scatter(class4[:, 0], class4[:, 1], class4[:, 2], c=class_colors.get('4'), label='class 4', marker='d')
+ax.set_title('Отображение 4 классов после стандаризации признаков', pad=25)
+display_classes([class1, class2, class3, class4])
 ax.legend()
 ax.set_xlabel('x')
 ax.set_ylabel('y')
 ax.set_zlabel('z')
 
 # отображение новых точек на графике после стандартизации признаков
-fig_classes_no_standardization_new_points = plt.figure()
-ax = fig_classes_no_standardization_new_points.add_subplot(projection='3d')
-ax.scatter(class1[:, 0], class1[:, 1], class1[:, 2], c=class_colors.get('1'), label='class 1')
-ax.scatter(class2[:, 0], class2[:, 1], class2[:, 2], c=class_colors.get('2'), label='class 2', marker='^')
-ax.scatter(class3[:, 0], class3[:, 1], class3[:, 2], c=class_colors.get('3'), label='class 3', marker='s')
-ax.scatter(class4[:, 0], class4[:, 1], class4[:, 2], c=class_colors.get('4'), label='class 4', marker='d')
+fig_classes_with_standardization_new_points = plt.figure()
+ax = fig_classes_with_standardization_new_points.add_subplot(projection='3d')
+ax.set_title('Отображение неизвестных объектов после стандартизации признаков', pad=25)
+display_classes([class1, class2, class3, class4])
 ax.scatter(x_1, y_1, z_1, c='k', label='new point 1', marker='p')
 ax.scatter(x_2, y_2, z_2, c='k', label='new point 2', marker='p')
 ax.scatter(x_3, y_3, z_3, c='k', label='new point 3', marker='p')
@@ -371,9 +398,11 @@ ax.set_xlabel('x')
 ax.set_ylabel('y')
 ax.set_zlabel('z')
 
+
 # определение принадлежности новых точек к классам
 fig_new_points_classes = plt.figure()
 ax = fig_new_points_classes.add_subplot(projection='3d')
+display_classes([class1, class2, class3, class4])
 ax.scatter(class1[:, 0], class1[:, 1], class1[:, 2], c=class_colors.get('1'), label='class 1')
 ax.scatter(class2[:, 0], class2[:, 1], class2[:, 2], c=class_colors.get('2'), label='class 2', marker='^')
 ax.scatter(class3[:, 0], class3[:, 1], class3[:, 2], c=class_colors.get('3'), label='class 3', marker='s')
@@ -407,13 +436,16 @@ i = 0
 for x in indices:
     for y in indices:
         for z in indices:
-            nearest_class = find_nearest_class(my_class_list, (x, y, z), my_obj_to_class_method,
-                                               my_obj_to_obj_method).__iter__().__next__()
+            nearest_class = find_nearest_class(my_class_list, (x, y, z), obj_to_class_method,
+                                               obj_to_obj_method).__iter__().__next__()
             ax.scatter(x, y, z, c=class_colors[nearest_class], alpha=0.15)
             i += 1
             if (i % 100) == 0:
                 print(str(i / ((11 / 0.1) ** 3)), end='\r')
                 # print(i)
+ax.set_title('Классификация точек пространства\n'
+             'Эвклидово расстояние\n'
+             'Расстояние до "ближайшего соседа"', pad=25)
 ax.set_xlabel('x')
 ax.set_ylabel('y')
 ax.set_zlabel('z')
