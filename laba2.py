@@ -2,15 +2,23 @@ import matplotlib.pyplot as plt
 import numpy as np
 import argparse
 import sys
+from labellines import labelLine, labelLines
 
-X_ARRAY = np.arange(-2, 3, 0.1)
-Y_ARRAY = np.arange(-0.5, 2, 0.1)
+X_ARRAY = np.arange(-2, 3, 0.15)
+Y_ARRAY = np.arange(-1, 2.5, 0.15)
 
 class_colors = {
     '1': 'r',
     '2': 'b',
     '3': 'g',
     'undefined': 'k'
+}
+
+class_markers = {
+    '1': 'o',
+    '2': '^',
+    '3': 's',
+    'undefined': 'o'
 }
 
 parser = argparse.ArgumentParser()
@@ -103,7 +111,7 @@ def define_class_2(x, y):
         return 'undefined'
 
 
-def plot_decisive_function(coef1, coef2, coef3, x_lim, _ax, c='k', linestyle='-', linewidth=2):
+def plot_decisive_function(coef1, coef2, coef3, x_lim, _ax, c='k', linestyle='-', linewidth=1, label=None):
     """
     Функция рисует решающую функцию
     :param coef1: коэффициент перед х
@@ -113,55 +121,154 @@ def plot_decisive_function(coef1, coef2, coef3, x_lim, _ax, c='k', linestyle='-'
     :param c: цвет линии
     :param linestyle: стиль линии
     :param linewidth: ширина линии
-    :return:
+    :return: координаты 2-ух точек линии
     """
     x1 = x_lim[0]
     y1 = (-coef1 * x1 - coef3) / coef2
     x2 = x_lim[-1]
     y2 = (-coef1 * x2 - coef3) / coef2
-    _ax.plot([x1, x2], [y1, y2], c=c, linestyle=linestyle, linewidth=linewidth)
+    _ax.plot([x1, x2], [y1, y2], c=c, linestyle=linestyle, linewidth=linewidth, label=label)
+
+
+def input_new_point(message=""):
+    """
+    Функция для ввода координат точки
+    :return: function
+    """
+    print("Введите координаты точки " + message + ":\t")
+    try:
+        _x = float(input("x: "))
+        _y = float(input("y: "))
+        if check_value_x(_x) and check_value_y(_y):
+            return _x, _y
+        else:
+            print("Value error")
+            return input_new_point(message)
+    except ValueError:
+        print("Value error")
+        input_new_point(message)
+
+
+def check_value_x(*args):
+    """
+    Проверка значений координат (val < -5 or val > 15)
+    :param args: координаты
+    :return:
+    """
+    for val in args:
+        if val < -1.7 or val > 2.7:
+            return False
+    return True
+
+
+def check_value_y(*args):
+    """
+    Проверка значений координат (val < -5 or val > 15)
+    :param args: координаты
+    :return:
+    """
+    for val in args:
+        if val < -0.4 or val > 1.6:
+            return False
+    return True
 
 
 # точки для прорисовки прямых решающих функций
-fig, ax = plt.subplots()
+def plot_classes_1():
+    fig, ax = plt.subplots()
 
-ax.set_xlim([min(X_ARRAY), max(X_ARRAY)])
-ax.set_ylim([min(Y_ARRAY), max(Y_ARRAY)])
+    ax.set_xlim([min(X_ARRAY), max(X_ARRAY)])
+    ax.set_ylim([min(Y_ARRAY), max(Y_ARRAY)])
 
-plot_decisive_function(D12_A, D12_B, D12_C, X_ARRAY, ax, linestyle=':')
-plot_decisive_function(D13_D, D13_E, D13_F, X_ARRAY, ax, linestyle='--')
-plot_decisive_function(D23_G, D23_H, D23_K, X_ARRAY, ax, linestyle=(0, (3, 5, 1, 5)))
+    plot_decisive_function(D12_A, D12_B, D12_C, X_ARRAY, ax)
+    plot_decisive_function(D13_D, D13_E, D13_F, X_ARRAY, ax)
+    plot_decisive_function(D23_G, D23_H, D23_K, X_ARRAY, ax)
+    lines = plt.gca().get_lines()
+    l1 = lines[-3]
+    l2 = lines[-2]
+    l3 = lines[-1]
+    labelLine(l1, 1.6, label='d12', align=False, fontsize=14)
+    labelLine(l2, 0.7, label='d13', align=False, fontsize=14)
+    labelLine(l3, -1, label='d23', align=False, fontsize=14)
 
-# ax.text(1.5, 1.6, 'd12', rotation=y1_d12 / x1_d12 * 45, fontsize='x-large')
+    for x in X_ARRAY:
+        for y in Y_ARRAY:
+            class_ = define_class(x, y)
+            if class_ != 'undefined':
+                plt.scatter(x, y, c=class_colors[class_], marker=class_markers[class_], alpha=0.8, s=8)
 
-for x in X_ARRAY:
-    for y in Y_ARRAY:
-        class_ = define_class(x, y)
-        if class_ != 'undefined':
-            plt.scatter(x, y, c=class_colors[class_], alpha=1, s=8)
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+    ax.grid(True)
+    return ax
 
-ax.set_xlabel('x')
-ax.set_ylabel('y')
-ax.grid(True)
 
-fig, ax = plt.subplots()
+def plot_classes_2():
+    fig, ax = plt.subplots()
 
-ax.set_xlim([min(X_ARRAY), max(X_ARRAY)])
-ax.set_ylim([min(Y_ARRAY), max(Y_ARRAY)])
+    ax.set_xlim([min(X_ARRAY), max(X_ARRAY)])
+    ax.set_ylim([min(Y_ARRAY), max(Y_ARRAY)])
 
-plot_decisive_function(D1_M, D1_N, D1_P, X_ARRAY, ax, linestyle=':')
-plot_decisive_function(D2_Q, D2_R, D2_S, X_ARRAY, ax, linestyle='--')
-plot_decisive_function(D3_V, D3_W, D3_Z, X_ARRAY, ax, linestyle=(0, (3, 5, 1, 5)))
+    plot_decisive_function(D1_M, D1_N, D1_P, X_ARRAY, ax)
+    plot_decisive_function(D2_Q, D2_R, D2_S, X_ARRAY, ax)
+    plot_decisive_function(D3_V, D3_W, D3_Z, X_ARRAY, ax)
+    lines = plt.gca().get_lines()
+    l1 = lines[-3]
+    l2 = lines[-2]
+    l3 = lines[-1]
+    labelLine(l1, 1, label='d1', align=False, fontsize=14)
+    labelLine(l2, 0, label='d2', align=False, fontsize=14)
+    labelLine(l3, 2, label='d3', align=False, fontsize=14)
 
-# ax.text(1.5, 1.6, 'd12', rotation=y1_d12 / x1_d12 * 45, fontsize='x-large')
+    for x in X_ARRAY:
+        for y in Y_ARRAY:
+            class_ = define_class_2(x, y)
+            if class_ != 'undefined':
+                plt.scatter(x, y, c=class_colors[class_], marker=class_markers[class_], alpha=1, s=8)
 
-for x in X_ARRAY:
-    for y in Y_ARRAY:
-        class_ = define_class_2(x, y)
-        if class_ != 'undefined':
-            plt.scatter(x, y, c=class_colors[class_], alpha=1, s=8)
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+    ax.grid(True)
+    return ax
 
-ax.set_xlabel('x')
-ax.set_ylabel('y')
-ax.grid(True)
+
+x_input, y_input = input_new_point()
+print("Выберете способ классификации с помощью решающих функций:")
+while True:
+    try:
+        print("1 - Решающие функции отделяют класс от каждого другого класса")
+        print("2 - Решающая функция отделяет класс от всех остальных классов")
+        class_def_way = int(input("Способ: "))
+        if class_def_way not in [1, 2]:
+            print("Недопустимое значение")
+        else:
+            break
+    except ValueError:
+        print("Недопустимое значение")
+
+if class_def_way == 1:
+    ax = plot_classes_1()
+    defined_class = define_class(x_input, y_input)
+else:
+    ax = plot_classes_2()
+    defined_class = define_class_2(x_input, y_input)
+
+if defined_class == 'undefined':
+    print('Точку нельзя отнести ни к одному классу')
+else:
+    print(f'Точка относится к классу {defined_class}')
+
+ax.scatter(x_input, y_input, c='k', marker='p', s=70)
+
+
+# ax = plot_classes_1()
+# ax.scatter(-100, -100, c=class_colors['1'], marker=class_markers['1'], label='class 1')
+# ax.scatter(-100, -100, c=class_colors['2'], marker=class_markers['2'], label='class 2')
+# ax.scatter(-100, -100, c=class_colors['3'], marker=class_markers['3'], label='class 3')
+# ax.legend(loc='upper right')
+# ax = plot_classes_2()
+ax.scatter(-100, -100, c=class_colors['1'], marker=class_markers['1'], label='class 1')
+ax.scatter(-100, -100, c=class_colors['2'], marker=class_markers['2'], label='class 2')
+ax.scatter(-100, -100, c=class_colors['3'], marker=class_markers['3'], label='class 3')
+ax.legend(loc='upper right')
 plt.show()
