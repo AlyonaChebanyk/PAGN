@@ -81,33 +81,37 @@ def define_class(x, y):
         return 'undefined'
 
 
-# точки для прорисовки прямых решающих функций
 fig, ax = plt.subplots()
+
+
+def plot_decisive_function(coef1, coef2, coef3, x_lim, c='k', linestyle='-', linewidth=2):
+    """
+    Функция рисует решающую функцию
+    :param coef1: коэффициент перед х
+    :param coef2: коэффициент перед y
+    :param coef3: сводобный коэффициент
+    :param x_lim: границы значений x
+    :param c: цвет линии
+    :param linestyle: стиль линии
+    :param linewidth: ширина линии
+    :return:
+    """
+    x1 = x_lim[0]
+    y1 = (-coef1 * x1 - coef3) / coef2
+    x2 = x_lim[-1]
+    y2 = (-coef1 * x2 - coef3) / coef2
+    ax.plot([x1, x2], [y1, y2], c=c, linestyle=linestyle, linewidth=linewidth)
+
+
 ax.set_xlim([min(X_ARRAY), max(X_ARRAY)])
 ax.set_ylim([min(Y_ARRAY), max(Y_ARRAY)])
-x1_d12 = X_ARRAY[0]
-y1_d12 = (-D12_A * x1_d12 - D12_C) / D12_B
-x2_d12 = X_ARRAY[-1]
-y2_d12 = (-D12_A * x2_d12 - D12_C) / D12_B
-ax.plot([x1_d12, x2_d12], [y1_d12, y2_d12], c='k', linestyle=':', linewidth=2.5)
-print(find_cos(x1_d12, y1_d12, x2_d12, y2_d12))
 
-x1_d13 = X_ARRAY[0]
-y1_d13 = (-D13_D * x1_d13 - D13_F) / D13_E
-x2_d13 = X_ARRAY[-1]
-y2_d13 = (-D13_D * x2_d13 - D13_F) / D13_E
-ax.plot([x1_d13, x2_d13], [y1_d13, y2_d13], c='k', linestyle='--', linewidth=2.5)
+plot_decisive_function(D12_A, D12_B, D12_C, linestyle=':', x_lim=X_ARRAY)
+plot_decisive_function(D13_D, D13_E, D13_F, linestyle='--', x_lim=X_ARRAY)
+plot_decisive_function(D23_G, D23_H, D23_K, linestyle='--', x_lim=X_ARRAY)
 
-x1_d23 = X_ARRAY[0]
-y1_d23 = (-D23_G * x1_d23 - D23_K) / D23_H
-x2_d23 = X_ARRAY[-1]
-y2_d23 = (-D23_G * x2_d23 - D23_K) / D23_H
-plt.plot([x1_d23, x2_d23], [y1_d23, y2_d23], c='k', linestyle='-.', linewidth=2.5)
+# ax.text(1.5, 1.6, 'd12', rotation=y1_d12 / x1_d12 * 45, fontsize='x-large')
 
-ax.text(1.5, 1.6, 'd12', rotation=y1_d12 / x1_d12 * 45, fontsize='x-large')
-
-X_ARRAY = np.arange(-2, 3, 0.1)
-Y_ARRAY = np.arange(-0.5, 2, 0.1)
 
 for x in X_ARRAY:
     for y in Y_ARRAY:
