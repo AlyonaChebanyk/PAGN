@@ -10,6 +10,7 @@ class_colors = {
     '1': 'r',
     '2': 'b',
     '3': 'g',
+    'undefined': 'k'
 }
 
 parser = argparse.ArgumentParser()
@@ -81,10 +82,28 @@ def define_class(x, y):
         return 'undefined'
 
 
-fig, ax = plt.subplots()
+def define_class_2(x, y):
+    """
+    Определяет номер класса, к которому принадлежит точка o1
+    :param o1: координаты точки
+    :return: номер класса
+    """
+
+    d1 = lambda x, y: (D1_M * x + D1_N * y + D1_P) > 0
+    d2 = lambda x, y: (D2_Q * x + D2_R * y + D2_S) > 0
+    d3 = lambda x, y: (D3_V * x + D3_W * y + D3_Z) > 0
+
+    if d1(x, y) and not d2(x, y) and not d3(x, y):
+        return '1'
+    elif not d1(x, y) and d2(x, y) and not d3(x, y):
+        return '2'
+    elif not d1(x, y) and not d2(x, y) and d3(x, y):
+        return '3'
+    else:
+        return 'undefined'
 
 
-def plot_decisive_function(coef1, coef2, coef3, x_lim, c='k', linestyle='-', linewidth=2):
+def plot_decisive_function(coef1, coef2, coef3, x_lim, _ax, c='k', linestyle='-', linewidth=2):
     """
     Функция рисует решающую функцию
     :param coef1: коэффициент перед х
@@ -100,22 +119,45 @@ def plot_decisive_function(coef1, coef2, coef3, x_lim, c='k', linestyle='-', lin
     y1 = (-coef1 * x1 - coef3) / coef2
     x2 = x_lim[-1]
     y2 = (-coef1 * x2 - coef3) / coef2
-    ax.plot([x1, x2], [y1, y2], c=c, linestyle=linestyle, linewidth=linewidth)
+    _ax.plot([x1, x2], [y1, y2], c=c, linestyle=linestyle, linewidth=linewidth)
 
+
+# точки для прорисовки прямых решающих функций
+fig, ax = plt.subplots()
 
 ax.set_xlim([min(X_ARRAY), max(X_ARRAY)])
 ax.set_ylim([min(Y_ARRAY), max(Y_ARRAY)])
 
-plot_decisive_function(D12_A, D12_B, D12_C, linestyle=':', x_lim=X_ARRAY)
-plot_decisive_function(D13_D, D13_E, D13_F, linestyle='--', x_lim=X_ARRAY)
-plot_decisive_function(D23_G, D23_H, D23_K, linestyle='--', x_lim=X_ARRAY)
+plot_decisive_function(D12_A, D12_B, D12_C, X_ARRAY, ax, linestyle=':')
+plot_decisive_function(D13_D, D13_E, D13_F, X_ARRAY, ax, linestyle='--')
+plot_decisive_function(D23_G, D23_H, D23_K, X_ARRAY, ax, linestyle=(0, (3, 5, 1, 5)))
 
 # ax.text(1.5, 1.6, 'd12', rotation=y1_d12 / x1_d12 * 45, fontsize='x-large')
-
 
 for x in X_ARRAY:
     for y in Y_ARRAY:
         class_ = define_class(x, y)
+        if class_ != 'undefined':
+            plt.scatter(x, y, c=class_colors[class_], alpha=1, s=8)
+
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.grid(True)
+
+fig, ax = plt.subplots()
+
+ax.set_xlim([min(X_ARRAY), max(X_ARRAY)])
+ax.set_ylim([min(Y_ARRAY), max(Y_ARRAY)])
+
+plot_decisive_function(D1_M, D1_N, D1_P, X_ARRAY, ax, linestyle=':')
+plot_decisive_function(D2_Q, D2_R, D2_S, X_ARRAY, ax, linestyle='--')
+plot_decisive_function(D3_V, D3_W, D3_Z, X_ARRAY, ax, linestyle=(0, (3, 5, 1, 5)))
+
+# ax.text(1.5, 1.6, 'd12', rotation=y1_d12 / x1_d12 * 45, fontsize='x-large')
+
+for x in X_ARRAY:
+    for y in Y_ARRAY:
+        class_ = define_class_2(x, y)
         if class_ != 'undefined':
             plt.scatter(x, y, c=class_colors[class_], alpha=1, s=8)
 
