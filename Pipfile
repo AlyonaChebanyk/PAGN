@@ -4,8 +4,8 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-matplotlib = "==3.5.0b1"
 numpy = "==1.21.2"
+matplotlib-label-lines = "==0.4.1"
 
 [dev-packages]
 
