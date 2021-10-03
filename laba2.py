@@ -2,10 +2,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 import argparse
 import sys
+from laba1 import class1, class2, class3, class4
+from laba1 import display_classes, get_centroid, standardize
+from laba1 import class_colors as cl
 from labellines import labelLine, labelLines
 
 X_ARRAY = np.arange(-2, 3, 0.15)
 Y_ARRAY = np.arange(-1, 2.5, 0.15)
+Z_ARRAY = np.arange(0, 1, 0.1)
 
 class_colors = {
     '1': 'r',
@@ -69,7 +73,7 @@ def find_cos(x1, y1, x2, y2):
     return (x1 * x2 + y1 * y2) / ((np.sqrt(x1 ** 2 + y1 ** 2)) * np.sqrt(x2 ** 2 + y2 ** 2))
 
 
-def define_class(x, y):
+def define_class_2d(x, y):
     """
     Определяет номер класса, к которому принадлежит точка o1
     :param o1: координаты точки
@@ -90,7 +94,7 @@ def define_class(x, y):
         return 'undefined'
 
 
-def define_class_2(x, y):
+def define_class_2d_2(x, y):
     """
     Определяет номер класса, к которому принадлежит точка o1
     :param o1: координаты точки
@@ -173,6 +177,39 @@ def check_value_y(*args):
     return True
 
 
+def get_plane_between_points(point_1, point_2):
+    d_ = lambda v, c1, c2: 2 * (c1 - c2) * (v - (c1 + c2) / 2)
+    return lambda x, y, z: d_(x, point_1[0], point_2[0]) + \
+                           d_(y, point_1[1], point_2[1]) + \
+                           d_(z, point_1[2], point_2[2])
+
+
+def define_class_3d(x, y, z):
+    """
+    Определяет номер класса, к которому принадлежит точка o1
+    :param o1: координаты точки
+    :return: номер класса
+    """
+
+    d12 = lambda x, y, z: get_plane_between_points(get_centroid(class1), get_centroid(class2))(x, y, z) > 0
+    d13 = lambda x, y, z: get_plane_between_points(get_centroid(class1), get_centroid(class3))(x, y, z) > 0
+    d14 = lambda x, y, z: get_plane_between_points(get_centroid(class1), get_centroid(class4))(x, y, z) > 0
+    d23 = lambda x, y, z: get_plane_between_points(get_centroid(class2), get_centroid(class3))(x, y, z) > 0
+    d24 = lambda x, y, z: get_plane_between_points(get_centroid(class2), get_centroid(class4))(x, y, z) > 0
+    d34 = lambda x, y, z: get_plane_between_points(get_centroid(class3), get_centroid(class4))(x, y, z) > 0
+
+    if d12(x, y, z) and d13(x, y, z) and d14(x, y, z):
+        return '1'
+    elif not d12(x, y, z) and d23(x, y, z) and d24(x, y, z):
+        return '2'
+    elif not d13(x, y, z) and not d23(x, y, z) and d34(x, y, z):
+        return '3'
+    elif not d14(x, y, z) and not d24(x, y, z) and not d34(x, y, z):
+        return '4'
+    else:
+        return 'undefined'
+
+
 # точки для прорисовки прямых решающих функций
 def plot_classes_1():
     fig, ax = plt.subplots()
@@ -193,7 +230,7 @@ def plot_classes_1():
 
     for x in X_ARRAY:
         for y in Y_ARRAY:
-            class_ = define_class(x, y)
+            class_ = define_class_2d(x, y)
             if class_ != 'undefined':
                 plt.scatter(x, y, c=class_colors[class_], marker=class_markers[class_], alpha=0.8, s=8)
 
@@ -222,15 +259,33 @@ def plot_classes_2():
 
     for x in X_ARRAY:
         for y in Y_ARRAY:
-            class_ = define_class_2(x, y)
+            class_ = define_class_2d_2(x, y)
             if class_ != 'undefined':
-                plt.scatter(x, y, c=class_colors[class_], marker=class_markers[class_], alpha=1, s=8)
-
+                    plt.scatter(x, y, c=class_colors[class_], marker=class_markers[class_], alpha=1, s=8)
     ax.set_xlabel('x')
     ax.set_ylabel('y')
     ax.grid(True)
     return ax
 
+
+fig_classes_no_standardization = plt.figure()
+ax = fig_classes_no_standardization.add_subplot(projection='3d')
+(class1, class2, class3, class4) = standardize(class_list=np.array([class1, class2, class3, class4]))
+display_classes([class1, class2, class3, class4], ax)
+
+fig_classes_no_standardization = plt.figure()
+ax = fig_classes_no_standardization.add_subplot(projection='3d')
+for x in Z_ARRAY:
+    for y in Z_ARRAY:
+        for z in Z_ARRAY:
+            class_ = define_class_3d(x, y, z)
+            if class_ != 'undefined':
+                ax.scatter(x, y, z, c=cl[class_], alpha=0.5)
+
+ax.legend()
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_zlabel('z')
 
 x_input, y_input = input_new_point()
 print("Выберете способ классификации с помощью решающих функций:")
@@ -248,10 +303,10 @@ while True:
 
 if class_def_way == 1:
     ax = plot_classes_1()
-    defined_class = define_class(x_input, y_input)
+    defined_class = define_class_2d(x_input, y_input)
 else:
     ax = plot_classes_2()
-    defined_class = define_class_2(x_input, y_input)
+    defined_class = define_class_2d_2(x_input, y_input)
 
 if defined_class == 'undefined':
     print('Точку нельзя отнести ни к одному классу')

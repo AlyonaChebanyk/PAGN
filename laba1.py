@@ -317,136 +317,140 @@ def standardize(class_list, new_points=None):
             point[1] = (point[1] - y_min_value) / (y_max_value - y_min_value)
             point[2] = (point[2] - z_min_value) / (z_max_value - z_min_value)
 
-    return class_list, new_points
+    if new_points is None:
+        return class_list
+    else:
+        return class_list, new_points
 
 
-def display_classes(class_list):
+def display_classes(class_list, _ax):
     class1 = class_list[0]
     class2 = class_list[1]
     class3 = class_list[2]
     class4 = class_list[3]
-    ax.scatter(class1[:, 0], class1[:, 1], class1[:, 2], c=class_colors.get('1'), marker=class_markers['1'],
+    _ax.scatter(class1[:, 0], class1[:, 1], class1[:, 2], c=class_colors.get('1'), marker=class_markers['1'],
                label='class 1')
-    ax.scatter(class2[:, 0], class2[:, 1], class2[:, 2], c=class_colors.get('2'), marker=class_markers['2'],
+    _ax.scatter(class2[:, 0], class2[:, 1], class2[:, 2], c=class_colors.get('2'), marker=class_markers['2'],
                label='class 2')
-    ax.scatter(class3[:, 0], class3[:, 1], class3[:, 2], c=class_colors.get('3'), marker=class_markers['3'],
+    _ax.scatter(class3[:, 0], class3[:, 1], class3[:, 2], c=class_colors.get('3'), marker=class_markers['3'],
                label='class 3')
-    ax.scatter(class4[:, 0], class4[:, 1], class4[:, 2], c=class_colors.get('4'), marker=class_markers['4'],
+    _ax.scatter(class4[:, 0], class4[:, 1], class4[:, 2], c=class_colors.get('4'), marker=class_markers['4'],
                label='class 4')
 
 
-obj_to_obj_method = euclid_dist
-obj_to_class_method = get_distance_to_centroid
+if __name__ == '__main__':
+    obj_to_obj_method = euclid_dist
+    obj_to_class_method = get_distance_to_centroid
 
-x_1, y_1, z_1 = namespace.first_point if check_value(*namespace.first_point) else input_new_point("№1")
-print(f"Координаты первой точки: ({x_1}, {y_1}, {z_1})")
-x_2, y_2, z_2 = namespace.second_point if check_value(*namespace.second_point) else input_new_point("№2")
-print(f"Координаты второй точки: ({x_2}, {y_2}, {z_2})")
-x_3, y_3, z_3 = namespace.third_point if check_value(*namespace.third_point) else input_new_point("№3")
-print(f"Координаты третьей точки: ({x_3}, {y_3}, {z_3})")
+    x_1, y_1, z_1 = namespace.first_point if check_value(*namespace.first_point) else input_new_point("№1")
+    print(f"Координаты первой точки: ({x_1}, {y_1}, {z_1})")
+    x_2, y_2, z_2 = namespace.second_point if check_value(*namespace.second_point) else input_new_point("№2")
+    print(f"Координаты второй точки: ({x_2}, {y_2}, {z_2})")
+    x_3, y_3, z_3 = namespace.third_point if check_value(*namespace.third_point) else input_new_point("№3")
+    print(f"Координаты третьей точки: ({x_3}, {y_3}, {z_3})")
 
-my_obj_to_obj_method = input_choose_method_obj_to_obj(namespace.dist)
-my_obj_to_class_method = input_choose_method_obj_to_class(namespace.distance_to)
+    my_obj_to_obj_method = input_choose_method_obj_to_obj(namespace.dist)
+    my_obj_to_class_method = input_choose_method_obj_to_class(namespace.distance_to)
 
-# отображение классов на графике без стандартизации признаков
-fig_classes_no_standardization = plt.figure()
-ax = fig_classes_no_standardization.add_subplot(projection='3d')
-ax.set_title('Отображение 4 классов в начальном пространстве', pad=25)
-display_classes([class1, class2, class3, class4])
-ax.legend()
-ax.set_xlabel('x')
-ax.set_ylabel('y')
-ax.set_zlabel('z')
+    # отображение классов на графике без стандартизации признаков
+    fig_classes_no_standardization = plt.figure()
+    ax = fig_classes_no_standardization.add_subplot(projection='3d')
+    ax.set_title('Отображение 4 классов в начальном пространстве', pad=25)
+    display_classes([class1, class2, class3, class4], ax)
+    ax.legend()
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+    ax.set_zlabel('z')
 
-# отображение новых точек на графике
-fig_classes_no_standardization_new_points = plt.figure()
-ax = fig_classes_no_standardization_new_points.add_subplot(projection='3d')
-ax.set_title('Отображение неизвестных объектов в начальном пространстве', pad=25)
-display_classes([class1, class2, class3, class4])
-ax.scatter(x_1, y_1, z_1, c='k', label='x 1', marker='p')
-ax.scatter(x_2, y_2, z_2, c='k', label='x 2', marker='p')
-ax.scatter(x_3, y_3, z_3, c='k', label='x 3', marker='p')
-ax.legend()
-ax.set_xlabel('x')
-ax.set_ylabel('y')
-ax.set_zlabel('z')
-#
-# стандартизация признаков
-(class1, class2, class3, class4), ((x_1, y_1, z_1), (x_2, y_2, z_2), (x_3, y_3, z_3)) = standardize(class_list=np.array([class1, class2, class3, class4]),
-                                             new_points=np.array([[x_1, y_1, z_1], [x_2, y_2, z_2], [x_3, y_3, z_3]]))
+    # отображение новых точек на графике
+    fig_classes_no_standardization_new_points = plt.figure()
+    ax = fig_classes_no_standardization_new_points.add_subplot(projection='3d')
+    ax.set_title('Отображение неизвестных объектов в начальном пространстве', pad=25)
+    display_classes([class1, class2, class3, class4], ax)
+    ax.scatter(x_1, y_1, z_1, c='k', label='x 1', marker='p')
+    ax.scatter(x_2, y_2, z_2, c='k', label='x 2', marker='p')
+    ax.scatter(x_3, y_3, z_3, c='k', label='x 3', marker='p')
+    ax.legend()
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+    ax.set_zlabel('z')
+    #
+    # стандартизация признаков
+    (class1, class2, class3, class4), ((x_1, y_1, z_1), (x_2, y_2, z_2), (x_3, y_3, z_3)) = standardize(class_list=np.array([class1, class2, class3, class4]),
+                                                 new_points=np.array([[x_1, y_1, z_1], [x_2, y_2, z_2], [x_3, y_3, z_3]]))
 
-# отображение классов на графике после стандартизации признаков
-fig_classes_with_standardization = plt.figure()
-ax = fig_classes_with_standardization.add_subplot(projection='3d')
-ax.set_title('Отображение 4 классов после стандаризации признаков', pad=25)
-display_classes([class1, class2, class3, class4])
-ax.legend()
-ax.set_xlabel('x')
-ax.set_ylabel('y')
-ax.set_zlabel('z')
+    # отображение классов на графике после стандартизации признаков
+    fig_classes_with_standardization = plt.figure()
+    ax = fig_classes_with_standardization.add_subplot(projection='3d')
+    ax.set_title('Отображение 4 классов после стандаризации признаков', pad=25)
+    display_classes([class1, class2, class3, class4], ax)
+    ax.legend()
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+    ax.set_zlabel('z')
 
-# отображение новых точек на графике после стандартизации признаков
-fig_classes_with_standardization_new_points = plt.figure()
-ax = fig_classes_with_standardization_new_points.add_subplot(projection='3d')
-ax.set_title('Отображение неизвестных объектов после стандартизации признаков', pad=25)
-display_classes([class1, class2, class3, class4])
-ax.scatter(x_1, y_1, z_1, c='k', label='new point 1', marker='p')
-ax.scatter(x_2, y_2, z_2, c='k', label='new point 2', marker='p')
-ax.scatter(x_3, y_3, z_3, c='k', label='new point 3', marker='p')
-ax.legend()
-ax.set_xlabel('x')
-ax.set_ylabel('y')
-ax.set_zlabel('z')
+    # отображение новых точек на графике после стандартизации признаков
+    fig_classes_with_standardization_new_points = plt.figure()
+    ax = fig_classes_with_standardization_new_points.add_subplot(projection='3d')
+    ax.set_title('Отображение неизвестных объектов после стандартизации признаков', pad=25)
+    display_classes([class1, class2, class3, class4], ax)
+    ax.scatter(x_1, y_1, z_1, c='k', label='new point 1', marker='p')
+    ax.scatter(x_2, y_2, z_2, c='k', label='new point 2', marker='p')
+    ax.scatter(x_3, y_3, z_3, c='k', label='new point 3', marker='p')
+    ax.legend()
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+    ax.set_zlabel('z')
 
 
-# определение принадлежности новых точек к классам
-fig_new_points_classes = plt.figure()
-ax = fig_new_points_classes.add_subplot(projection='3d')
-display_classes([class1, class2, class3, class4])
-ax.scatter(class1[:, 0], class1[:, 1], class1[:, 2], c=class_colors.get('1'), label='class 1')
-ax.scatter(class2[:, 0], class2[:, 1], class2[:, 2], c=class_colors.get('2'), label='class 2', marker='^')
-ax.scatter(class3[:, 0], class3[:, 1], class3[:, 2], c=class_colors.get('3'), label='class 3', marker='s')
-ax.scatter(class4[:, 0], class4[:, 1], class4[:, 2], c=class_colors.get('4'), label='class 4', marker='d')
-ax.legend()
-ax.set_xlabel('x')
-ax.set_ylabel('y')
-ax.set_zlabel('z')
+    # определение принадлежности новых точек к классам
+    fig_new_points_classes = plt.figure()
+    ax = fig_new_points_classes.add_subplot(projection='3d')
+    display_classes([class1, class2, class3, class4], ax)
+    ax.scatter(class1[:, 0], class1[:, 1], class1[:, 2], c=class_colors.get('1'), label='class 1')
+    ax.scatter(class2[:, 0], class2[:, 1], class2[:, 2], c=class_colors.get('2'), label='class 2', marker='^')
+    ax.scatter(class3[:, 0], class3[:, 1], class3[:, 2], c=class_colors.get('3'), label='class 3', marker='s')
+    ax.scatter(class4[:, 0], class4[:, 1], class4[:, 2], c=class_colors.get('4'), label='class 4', marker='d')
+    ax.legend()
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+    ax.set_zlabel('z')
 
-my_class_list = {'1': class1, '2': class2, '3': class3, '4': class4}
-point_1_class = find_nearest_class(my_class_list, (x_1, y_1, z_1), my_obj_to_class_method,
-                                   my_obj_to_obj_method).__iter__().__next__()
-ax.scatter(x_1, y_1, z_1, c=class_colors[point_1_class], marker='p')
+    my_class_list = {'1': class1, '2': class2, '3': class3, '4': class4}
+    point_1_class = find_nearest_class(my_class_list, (x_1, y_1, z_1), my_obj_to_class_method,
+                                       my_obj_to_obj_method).__iter__().__next__()
+    ax.scatter(x_1, y_1, z_1, c=class_colors[point_1_class], marker='p')
 
-point_2_class = find_nearest_class(my_class_list, (x_2, y_2, z_2), my_obj_to_class_method,
-                                   my_obj_to_obj_method).__iter__().__next__()
-ax.scatter(x_2, y_2, z_2, c=class_colors[point_2_class], marker='p')
+    point_2_class = find_nearest_class(my_class_list, (x_2, y_2, z_2), my_obj_to_class_method,
+                                       my_obj_to_obj_method).__iter__().__next__()
+    ax.scatter(x_2, y_2, z_2, c=class_colors[point_2_class], marker='p')
 
-point_3_class = find_nearest_class(my_class_list, (x_3, y_3, z_3), my_obj_to_class_method,
-                                   my_obj_to_obj_method).__iter__().__next__()
-ax.scatter(x_3, y_3, z_3, c=class_colors[point_3_class], marker='p')
-ax.set_xlabel('x')
-ax.set_ylabel('y')
-ax.set_zlabel('z')
+    point_3_class = find_nearest_class(my_class_list, (x_3, y_3, z_3), my_obj_to_class_method,
+                                       my_obj_to_obj_method).__iter__().__next__()
+    ax.scatter(x_3, y_3, z_3, c=class_colors[point_3_class], marker='p')
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+    ax.set_zlabel('z')
 
-indices = np.arange(0, 1, 0.05)
+    indices = np.arange(0, 1, 0.05)
 
-fig2 = plt.figure()
-ax = fig2.add_subplot(projection='3d')
-i = 0
-for x in indices:
-    for y in indices:
-        for z in indices:
-            nearest_class = find_nearest_class(my_class_list, (x, y, z), obj_to_class_method,
-                                               obj_to_obj_method).__iter__().__next__()
-            ax.scatter(x, y, z, c=class_colors[nearest_class], alpha=0.15)
-            i += 1
-            if (i % 100) == 0:
-                print(str(i / ((11 / 0.1) ** 3)), end='\r')
-                # print(i)
-ax.set_title('Классификация точек пространства\n'
-             'Эвклидово расстояние\n'
-             'Расстояние до "ближайшего соседа"', pad=25)
-ax.set_xlabel('x')
-ax.set_ylabel('y')
-ax.set_zlabel('z')
-plt.show()
+    fig2 = plt.figure()
+    ax = fig2.add_subplot(projection='3d')
+    i = 0
+    for x in indices:
+        for y in indices:
+            for z in indices:
+                nearest_class = find_nearest_class(my_class_list, (x, y, z), obj_to_class_method,
+                                                   obj_to_obj_method).__iter__().__next__()
+                ax.scatter(x, y, z, c=class_colors[nearest_class], alpha=0.15)
+                i += 1
+                if (i % 100) == 0:
+                    print(str(i / ((11 / 0.1) ** 3)), end='\r')
+                    # print(i)
+    ax.set_title('Классификация точек пространства\n'
+                 'Эвклидово расстояние\n'
+                 'Расстояние до "ближайшего соседа"', pad=25)
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+    ax.set_zlabel('z')
+    plt.show()
