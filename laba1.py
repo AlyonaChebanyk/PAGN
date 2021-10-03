@@ -8,26 +8,6 @@ import argparse
 
 L = 5
 
-parser = argparse.ArgumentParser()
-
-parser.add_argument('--first_point', type=float, help="first point -coordinate", default=None, nargs='+')
-parser.add_argument('--second_point', type=float, help="second point -coordinate", default=None, nargs='+')
-parser.add_argument('--third_point', type=float, help="third point -coordinate", default=None, nargs='+')
-parser.add_argument('--dist', type=str, choices=['1', '2'],
-                    help="Choose dist (1. Евклидово расстояния, 2. Расстрояние Минковского", default=None, )
-parser.add_argument('--distance_to', type=str, choices=['1', '2'],
-                    help="Choose distance_to (1. Расстояние до центроида класса, 2. Найменше з значень відстані "
-                         "до усіх еталонів класу(«найближчий сусід»))",
-                    default=None, )
-
-namespace = parser.parse_args(sys.argv[1:])
-
-if namespace.first_point and len(namespace.first_point) != 3:
-    raise ValueError('Некорректные координаты первой точки')
-if namespace.second_point and len(namespace.second_point) != 3:
-    raise ValueError('Некорректные координаты второй точки')
-if namespace.third_point and len(namespace.third_point) != 3:
-    raise ValueError('Некорректные координаты третьей точки')
 
 class1 = np.array([[2.6, 3.3, 3.7],
                    [3.2, 3.8, 2.7],
@@ -339,6 +319,26 @@ def display_classes(class_list, _ax):
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--first_point', type=float, help="first point -coordinate", default=None, nargs='+')
+    parser.add_argument('--second_point', type=float, help="second point -coordinate", default=None, nargs='+')
+    parser.add_argument('--third_point', type=float, help="third point -coordinate", default=None, nargs='+')
+    parser.add_argument('--dist', type=str, choices=['1', '2'],
+                        help="Choose dist (1. Евклидово расстояния, 2. Расстрояние Минковского", default=None, )
+    parser.add_argument('--distance_to', type=str, choices=['1', '2'],
+                        help="Choose distance_to (1. Расстояние до центроида класса, 2. Найменше з значень відстані "
+                             "до усіх еталонів класу(«найближчий сусід»))",
+                        default=None, )
+
+    namespace = parser.parse_args(sys.argv[1:])
+
+    if namespace.first_point and len(namespace.first_point) != 3:
+        raise ValueError('Некорректные координаты первой точки')
+    if namespace.second_point and len(namespace.second_point) != 3:
+        raise ValueError('Некорректные координаты второй точки')
+    if namespace.third_point and len(namespace.third_point) != 3:
+        raise ValueError('Некорректные координаты третьей точки')
     obj_to_obj_method = euclid_dist
     obj_to_class_method = get_distance_to_centroid
 
