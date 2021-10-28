@@ -7,20 +7,6 @@ from laba1 import display_classes, get_centroid, standardize
 from laba1 import class_colors as cl
 from labellines import labelLine, labelLines
 
-fig_classes_no_standardization = plt.figure()
-ax = fig_classes_no_standardization.add_subplot(projection='3d')
-(class1, class2, class3, class4) = standardize(class_list=np.array([class1, class2, class3, class4]))
-display_classes([class1, class2, class3, class4], ax)
-
-
-# plt.show()
-
-
-# class1_transpose_1 = np.column_stack(class1.transpose(), [], axis=1)
-# class2_transpose_1 = class2.transpose()
-# class3_transpose_1 = class3.transpose()
-# class4_transpose_1 = class4.transpose()
-
 
 def get_pseudo_inverse_matrix(class_1, class_2):
     class_1 = np.column_stack((class_1, [1] * len(class_1)))
@@ -54,20 +40,6 @@ def draw_area(class_1, class_2, ax, bords: np.ndarray = np.linspace(0, 1, 10)):
     ax.plot_surface(X, Y, Z(X, Y, pseudo_inverse_matrix), alpha=0.2)
 
 
-draw_area(class1, class2, ax)
-draw_area(class1, class3, ax)
-draw_area(class1, class4, ax)
-draw_area(class2, class3, ax)
-draw_area(class2, class4, ax)
-draw_area(class3, class4, ax)
-
-ax.axes.set_xlim3d(0, 1)
-ax.axes.set_ylim3d(0, 1)
-ax.axes.set_zlim3d(0, 1)
-
-
-bord = np.linspace(0, 1, 10)
-
 def define_class_3d(X, Y, Z):
     d_x = lambda x, y, z, pim: (pim[0] * x + pim[1] * y + pim[2] * z + pim[3])
     d12 = d_x(X, Y, Z, get_pseudo_inverse_matrix(class1, class2)) > 0
@@ -89,6 +61,56 @@ def define_class_3d(X, Y, Z):
         return 'undefined'
 
 
+def check_value(*args):
+    """
+    Проверка значений координат (val < 0 or val > 1)
+    :param args: координаты
+    :return:
+    """
+    for val in args:
+        if val < 0 or val > 1:
+            return False
+    return True
+
+
+def input_new_point():
+    """
+    Функция для ввода координат точки
+    :return: function
+    """
+    print("Введите координаты точки " + ":\t")
+    try:
+        _x = float(input("x: "))
+        _y = float(input("y: "))
+        _z = float(input("z: "))
+        if check_value(_x) and check_value(_y) and check_value(_z):
+            return _x, _y, _z
+        else:
+            print("Value error")
+            return input_new_point()
+    except ValueError:
+        print("Value error")
+        input_new_point()
+
+
+fig_classes_no_standardization = plt.figure()
+ax = fig_classes_no_standardization.add_subplot(projection='3d')
+(class1, class2, class3, class4) = standardize(class_list=np.array([class1, class2, class3, class4]))
+display_classes([class1, class2, class3, class4], ax)
+
+draw_area(class1, class2, ax)
+draw_area(class1, class3, ax)
+draw_area(class1, class4, ax)
+draw_area(class2, class3, ax)
+draw_area(class2, class4, ax)
+draw_area(class3, class4, ax)
+
+ax.axes.set_xlim3d(0, 1)
+ax.axes.set_ylim3d(0, 1)
+ax.axes.set_zlim3d(0, 1)
+
+bord = np.linspace(0, 1, 10)
+
 fig_classes_no_standardization = plt.figure()
 ax = fig_classes_no_standardization.add_subplot(projection='3d')
 for x in bord:
@@ -102,4 +124,26 @@ ax.legend()
 ax.set_xlabel('x')
 ax.set_ylabel('y')
 ax.set_zlabel('z')
+
+x_input, y_input, z_input = input_new_point()
+defined_class = define_class_3d(x_input, y_input, z_input)
+
+if defined_class == 'undefined':
+    print('Точку нельзя отнести ни к одному классу')
+else:
+    print(f'Точка относится к классу {defined_class}')
+
+    fig_classes_no_standardization = plt.figure()
+    ax = fig_classes_no_standardization.add_subplot(projection='3d')
+    draw_area(class1, class2, ax)
+    draw_area(class1, class3, ax)
+    draw_area(class1, class4, ax)
+    draw_area(class2, class3, ax)
+    draw_area(class2, class4, ax)
+    draw_area(class3, class4, ax)
+    ax.scatter(x_input, y_input, c=cl[defined_class], marker='p', s=70)
+    ax.axes.set_xlim3d(0, 1)
+    ax.axes.set_ylim3d(0, 1)
+    ax.axes.set_zlim3d(0, 1)
+
 plt.show()
