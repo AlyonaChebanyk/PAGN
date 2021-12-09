@@ -69,7 +69,7 @@ def get_density(mi, sigma, x, p=1):
     :param p: вероятность появления класса
     :return: плотность распределения
     """
-    return (1 / sigma * np.sqrt(2 * np.pi)) * np.e ** (-((x - mi) ** 2) / (2 * sigma ** 2)) * p
+    return (1 / (sigma * np.sqrt(2 * np.pi))) * np.e ** (-((x - mi) ** 2) / (2 * sigma ** 2)) * p
 
 
 obj_density = {
