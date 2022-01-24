@@ -8,6 +8,17 @@ from laba1 import class_colors as cl
 from labellines import labelLine, labelLines
 from itertools import repeat
 
+classA = np.array([[0.05, 0.91],
+                   [0.14, 0.96],
+                   [0.16, 0.9],
+                   [0.07, 0.7]])
+
+classB = np.array([[0.49, 0.89],
+                   [0.34, 0.81],
+                   [0.36, 0.67],
+                   [0.47, 0.49]])
+
+
 def get_scalar_product(class1, class2):
     list_of_vectors = np.concatenate([class1, class2])
     scalar_products = np.empty([len(list_of_vectors), len(list_of_vectors)])
@@ -74,6 +85,51 @@ def get_lambda_with_one_zero_lambda(class1, class2):
         print(i)
 
 
+def get_lambda_with_any_zero_lambda(class1, class2, t=0):
+    matrix_a = get_A_matrix(class1, class2)
+    y_list = get_y(class1, class2)
+    n = len(y_list)
+
+    matrix_b = [[]]
+    matrix_b[0].extend([1] * (n - t) + [0])
+    matrix_b = np.asarray(matrix_b)
+    matrix_b = matrix_b.T
+
+    def get_lambda(_matrix_a, _matrix_b, _l=[], t=0, c=True):
+        if t > 0:
+            _t = t - 1
+            for i in range(len(_matrix_a)):
+                print(f't = {t}; i = {i}; _t = {_t}; c = {c}')
+                new_matrix_a = np.delete(np.delete(_matrix_a, i, 1), i, 0)
+                new_matrix_b = np.delete(_matrix_b, i, 0)
+                if _t > 0:
+                    try:
+                        print("-->")
+                        __lambda = get_lambda(new_matrix_a, new_matrix_b, t=_t, c=False)
+                    except:  # !!!!!
+                        __lambda = None
+                else:
+                    try:
+                        __lambda = np.linalg.inv(new_matrix_a).dot(new_matrix_b)
+                    except:  # !!!!!
+                        __lambda = None
+                print(__lambda)
+                if __lambda is not None:
+                    if all(n >= 0 for n in __lambda):
+                        print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+                        return __lambda
+            if c:
+                __lambda = get_lambda(_matrix_a, _matrix_b, t=t + 1)
+
+        if t == 0:
+            __lambda = np.linalg.inv(_matrix_a).dot(_matrix_b)
+            print(__lambda)
+            return __lambda if all(n < 0 for n in __lambda) else get_lambda(_matrix_a, _matrix_b, t=t + 1)
+
+    _lambda = get_lambda(matrix_a, matrix_b, 0)
+    return _lambda
+
+
 def get_lambda_with_two_zero_lambda(class1, class2):
     A = get_A_matrix(class1, class2)
     B = [[]]
@@ -93,8 +149,6 @@ def get_lambda_with_two_zero_lambda(class1, class2):
                 except np.linalg.LinAlgError:
                     lambda_dict_two_zero[frozenset([i, j])] = None
 
-    # for key, value in lambda_dict_two_zero.items():
-    #     print(key, value)
     F_values = {}
     for k, v in lambda_dict_two_zero.items():
         if v is None:
@@ -140,7 +194,7 @@ def get_w_b(class1, class2, lambda_list):
             break
     # b_list = [y_list[b_index]**-1 - np.asarray(w).dot(class_list[b_index]) for b_index in range(n)]
     # b = np.mean(b_list)
-    b = y_list[b_index]**-1 - np.asarray(w).dot(class_list[b_index])
+    b = y_list[b_index] ** -1 - np.asarray(w).dot(class_list[b_index])
     # b = 0
     return w, b
 
@@ -149,43 +203,26 @@ def get_h(w):
     return 2 / (np.sqrt(w[0] ** 2 + w[1] ** 2))
 
 
-classA = np.array([[0.05, 0.91],
-                   [0.14, 0.96],
-                   [0.16, 0.9],
-                   [0.07, 0.7]])
+if __name__ == '__main__':
+    lambda_list = get_lambda_with_any_zero_lambda(classA, classB)
 
-classB = np.array([[0.49, 0.89],
-                   [0.34, 0.81],
-                   [0.36, 0.67],
-                   [0.47, 0.49]])
+    x1 = np.linspace(0, 0.5, 4)
 
-lambda_list = get_lambda_with_two_zero_lambda(classA, classB)
+    ax, fig1 = plt.subplots()
+    for obj in classA:
+        plt.scatter(obj[0], obj[1], c='r')
 
-# for obj in classA:
-#     plt.scatter(obj[0], obj[1], c='r')
-#
-# for obj in classB:
-#     plt.scatter(obj[0], obj[1], c='b')
+    for obj in classB:
+        plt.scatter(obj[0], obj[1], c='b')
+    w, b = get_w_b(classA, classB, lambda_list)
+    print(get_h(w))
+    h = get_h(w)
+    y = - (x1 * w[0] + b) / w[1]
+    plt.plot(x1, y)
+    y = - (x1 * w[0] + b + 1) / w[1]
+    plt.plot(x1, y)
+    y = - (x1 * w[0] + b - 1) / w[1]
+    plt.grid(True)
+    plt.plot(x1, y)
 
-x1 = np.linspace(0, 0.5, 4)
-# -5.8 x1 + 2 x2 - 0.5 = 0
-# x2 = - (-5.8 x1 - 0.5) / 2
-
-ax, fig1 = plt.subplots()
-for obj in classA:
-    plt.scatter(obj[0], obj[1], c='r')
-
-for obj in classB:
-    plt.scatter(obj[0], obj[1], c='b')
-w, b = get_w_b(classA, classB, lambda_list)
-print(get_h(w))
-h = get_h(w)
-y = - (x1 * w[0] + b) / w[1]
-plt.plot(x1, y)
-y = - (x1 * w[0] + b + 1) / w[1]
-plt.plot(x1, y)
-y = - (x1 * w[0] + b - 1) / w[1]
-plt.grid(True)
-plt.plot(x1, y)
-
-plt.show()
+    plt.show()
