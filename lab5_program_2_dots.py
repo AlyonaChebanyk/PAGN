@@ -43,7 +43,6 @@ def get_A_matrix(class1, class2):
         for j in range(n):
             A[i, j] = scalar_products[i, j] * y_list[i] * y_list[j]
         A[i, j + 1] = y_list[i] * (-1)
-
     A[-1] = y_list + [0]
     return A
 
@@ -88,8 +87,6 @@ def get_lambda_with_two_zero_lambda(class1, class2):
             if i != j and y_list[i] * y_list[j] == -1:
                 new_A = np.delete(np.delete(A, [i, j], 1), [i, j], 0)
                 lambda_dict_two_zero[frozenset([i, j])] = np.linalg.inv(new_A).dot(B)
-    # for key, value in lambda_dict_two_zero.items():
-    #     print(key, value)
     F_values = {}
     for k, v in lambda_dict_two_zero.items():
         lambda_values = np.zeros(n + 1)
@@ -131,10 +128,7 @@ def get_w_b(class1, class2, lambda_list):
         if l > 0:
             b_index = n
             break
-    # b_list = [y_list[b_index]**-1 - np.asarray(w).dot(class_list[b_index]) for b_index in range(n)]
-    # b = np.mean(b_list)
     b = y_list[b_index]**-1 - np.asarray(w).dot(class_list[b_index])
-    # b = 0
     return w, b
 
 
@@ -149,12 +143,6 @@ classB = np.array([[0.49, 0.89],
                    [0.34, 0.81]])
 
 lambda_list = get_lambda_with_two_zero_lambda(classA, classB)
-
-# for obj in classA:
-#     plt.scatter(obj[0], obj[1], c='r')
-#
-# for obj in classB:
-#     plt.scatter(obj[0], obj[1], c='b')
 
 x1 = np.linspace(0, 0.5, 4)
 # -5.8 x1 + 2 x2 - 0.5 = 0
