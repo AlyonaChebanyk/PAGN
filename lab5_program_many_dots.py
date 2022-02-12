@@ -1,12 +1,5 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import argparse
-import sys
-from laba1 import class1, class2, class3, class4
-from laba1 import display_classes, get_centroid, standardize
-from laba1 import class_colors as cl
-from labellines import labelLine, labelLines
-from itertools import repeat
 
 classA = np.array([[0.05, 0.91],
                    [0.14, 0.96],
@@ -95,53 +88,35 @@ def get_lambda_with_any_zero_lambda(class1, class2, t=0):
     matrix_b = np.asarray(matrix_b)
     matrix_b = matrix_b.T
 
-    def get_lambda(_matrix_a, _matrix_b, _l=[], t=0, c=True):
-        if t > 0:
-            _t = t - 1
-            for i in range(len(_matrix_a)):
-                print(f't = {t}; i = {i}; _t = {_t}; c = {c}')
-                new_matrix_a = np.delete(np.delete(_matrix_a, i, 1), i, 0)
-                new_matrix_b = np.delete(_matrix_b, i, 0)
-                if _t > 0:
-                    try:
-                        print("-->")
-                        __lambda = get_lambda(new_matrix_a, new_matrix_b, t=_t, c=False)
-                    except:  # !!!!!
-                        __lambda = []
-                else:
-                    try:
-                        __lambda = np.linalg.inv(new_matrix_a).dot(new_matrix_b)
-                    except:  # !!!!!
-                        __lambda = []
-                print(__lambda)
-                if len(__lambda) > 0:
-                    if all(n >= 0 for n in __lambda):
-                        print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-                        return __lambda
-            if c:
-                __lambda = get_lambda(_matrix_a, _matrix_b, t=t + 1)
-
-        if t == 0:
-            print(_matrix_a)
-            print(_matrix_b)
-            try:
-                __lambda = np.linalg.inv(_matrix_a).dot(_matrix_b)
-            except:  # !!!!!
-                __lambda = []
-            print(__lambda)
-            return __lambda if len(__lambda) > 0 and all(n < 0 for n in __lambda) else get_lambda(_matrix_a, _matrix_b,
-                                                                                                  t=t + 1)
-
-    _lambda = get_lambda(matrix_a, matrix_b, 0)
-    return _lambda
+    def lam(mat_a, mat_b):
+        try:
+            result = np.linalg.inv(mat_a).dot(mat_b)
+        except:
+            result = []
+        return result
 
     # noinspection PyUnreachableCode
-    def get_lambda(_matrix_a, _matrix_b, _l=[], t=0, c=True):
-        try:
-            __lambda = np.linalg.inv(_matrix_a).dot(_matrix_b)
-        except:
-            __lambda = []
-        return __lambda
+    def get_lambda(old_matrices: dict[str: list[np.array, np.array]]) -> tuple[
+        str, dict[str: list[np.array, np.array]], np.array]:
+        for matrices in old_matrices.keys():
+            old_matrix_a = old_matrices[matrices][0]
+            old_matrix_b = old_matrices[matrices][1]
+            __lambda = lam(old_matrix_a, old_matrix_b)
+            if len(__lambda) > 0 and all(n >= 0 for n in __lambda):
+                return matrices, old_matrices[matrices], __lambda
+        new_matrices = {}
+        for matrices in old_matrices.keys():
+            for i in range(len(old_matrices[matrices][0])):
+                old_matrix_a = old_matrices[matrices][0]
+                old_matrix_b = old_matrices[matrices][1]
+
+                new_matrix_a = np.delete(np.delete(old_matrix_a, i, 1), i, 0)
+                new_matrix_b = np.delete(old_matrix_b, i, 0)
+                key = matrices + ' ' + str(i)
+                new_matrices.update({key: [new_matrix_a, new_matrix_b]})
+        return get_lambda(new_matrices)
+
+    return get_lambda({' ': [matrix_a, matrix_b]})
 
 
 def get_lambda_with_two_zero_lambda(class1, class2):
@@ -219,7 +194,7 @@ def get_h(w):
 
 
 if __name__ == '__main__':
-    lambda_list = get_lambda_with_any_zero_lambda(classA, classB)
+    keys, matrixes, lambda_list = get_lambda_with_any_zero_lambda(classA, classB)
 
     x1 = np.linspace(0, 0.5, 4)
 
