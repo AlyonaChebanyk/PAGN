@@ -107,14 +107,14 @@ def get_lambda_with_any_zero_lambda(class1, class2, t=0):
                         print("-->")
                         __lambda = get_lambda(new_matrix_a, new_matrix_b, t=_t, c=False)
                     except:  # !!!!!
-                        __lambda = None
+                        __lambda = []
                 else:
                     try:
                         __lambda = np.linalg.inv(new_matrix_a).dot(new_matrix_b)
                     except:  # !!!!!
-                        __lambda = None
+                        __lambda = []
                 print(__lambda)
-                if __lambda is not None:
+                if len(__lambda) > 0:
                     if all(n >= 0 for n in __lambda):
                         print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
                         return __lambda
@@ -122,12 +122,26 @@ def get_lambda_with_any_zero_lambda(class1, class2, t=0):
                 __lambda = get_lambda(_matrix_a, _matrix_b, t=t + 1)
 
         if t == 0:
-            __lambda = np.linalg.inv(_matrix_a).dot(_matrix_b)
+            print(_matrix_a)
+            print(_matrix_b)
+            try:
+                __lambda = np.linalg.inv(_matrix_a).dot(_matrix_b)
+            except:  # !!!!!
+                __lambda = []
             print(__lambda)
-            return __lambda if all(n < 0 for n in __lambda) else get_lambda(_matrix_a, _matrix_b, t=t + 1)
+            return __lambda if len(__lambda) > 0 and all(n < 0 for n in __lambda) else get_lambda(_matrix_a, _matrix_b,
+                                                                                                  t=t + 1)
 
     _lambda = get_lambda(matrix_a, matrix_b, 0)
     return _lambda
+
+    # noinspection PyUnreachableCode
+    def get_lambda(_matrix_a, _matrix_b, _l=[], t=0, c=True):
+        try:
+            __lambda = np.linalg.inv(_matrix_a).dot(_matrix_b)
+        except:
+            __lambda = []
+        return __lambda
 
 
 def get_lambda_with_two_zero_lambda(class1, class2):
@@ -184,6 +198,7 @@ def get_w_b(class1, class2, lambda_list):
     y_list = get_y(class1, class2)
     n = len(y_list)
     w = [0, 0]
+    print(lambda_list)
     for i in range(n):
         w += lambda_list[i] * y_list[i] * class_list[i]
 
