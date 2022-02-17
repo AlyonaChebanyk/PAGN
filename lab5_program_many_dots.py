@@ -96,27 +96,32 @@ def get_lambda_with_any_zero_lambda(class1, class2, t=0):
         return result
 
     # noinspection PyUnreachableCode
-    def get_lambda(old_matrices: dict[str: list[np.array, np.array]]) -> tuple[
-        str, dict[str: list[np.array, np.array]], np.array]:
-        for matrices in old_matrices.keys():
-            old_matrix_a = old_matrices[matrices][0]
-            old_matrix_b = old_matrices[matrices][1]
+    def get_lambda(old_matrices: dict[tuple: list[np.array, np.array]]) -> tuple[
+        str, dict[tuple: list[np.array, np.array]], np.array]:
+        for indexes, matrices in old_matrices.items():
+            old_matrix_a = matrices[0]
+            old_matrix_b = matrices[1]
             __lambda = lam(old_matrix_a, old_matrix_b)
             if len(__lambda) > 0 and all(n >= 0 for n in __lambda):
-                return matrices, old_matrices[matrices], __lambda
+                return indexes, matrices, __lambda
         new_matrices = {}
-        for matrices in old_matrices.keys():
-            for i in range(len(old_matrices[matrices][0])):
-                old_matrix_a = old_matrices[matrices][0]
-                old_matrix_b = old_matrices[matrices][1]
+        for indexes, matrices in old_matrices.items():
+            assert len(matrices[0]) == len(matrices[1]), "error"
+            for i in range(len(matrices[0])):
+                old_matrix_a = matrices[0]
+                old_matrix_b = matrices[1]
 
                 new_matrix_a = np.delete(np.delete(old_matrix_a, i, 1), i, 0)
                 new_matrix_b = np.delete(old_matrix_b, i, 0)
-                key = matrices + ' ' + str(i)
-                new_matrices.update({key: [new_matrix_a, new_matrix_b]})
+                key: list = sorted(indexes)
+                key.append(i)
+                key: tuple = tuple(key)
+                if key not in indexes:
+                    new_matrices.update({key: [new_matrix_a, new_matrix_b]})
         return get_lambda(new_matrices)
-
-    return get_lambda({' ': [matrix_a, matrix_b]})
+# (0, 3, 4, 8)
+# (0, 2, 2, 4)
+    return get_lambda({(): [matrix_a, matrix_b]})
 
 
 def get_lambda_with_two_zero_lambda(class1, class2):
