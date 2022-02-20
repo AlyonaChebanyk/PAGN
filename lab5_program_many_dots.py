@@ -1,21 +1,21 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-# classA = np.array([[0.05, 0.91],
-#                    [0.14, 0.96],
-#                    [0.16, 0.9],
-#                    [0.07, 0.7]])
-#
-# classB = np.array([[0.49, 0.89],
-#                    [0.34, 0.81],
-#                    [0.36, 0.67],
-#                    [0.47, 0.49]])
-
 classA = np.array([[0.05, 0.91],
-                   [0.14, 0.96]])
+                   [0.14, 0.96],
+                   [0.16, 0.9],
+                   [0.07, 0.7]])
 
 classB = np.array([[0.49, 0.89],
-                   [0.34, 0.81]])
+                   [0.34, 0.81],
+                   [0.36, 0.67],
+                   [0.47, 0.49]])
+
+# classA = np.array([[0.05, 0.91],
+#                    [0.14, 0.96]])
+#
+# classB = np.array([[0.49, 0.89],
+#                    [0.34, 0.81]])
 
 
 def get_scalar_product(class1, class2):
@@ -137,9 +137,7 @@ def get_lambda_with_any_zero_lambda(class1, class2):
     def get_result(old_matrices):
         _lambda = get_lambda(old_matrices)
         result = f_lambda(class1, class2, _lambda)
-        keys = result[0]
-        result = result[1:]
-        if result[0] is None:
+        if result is None:
             return get_result(get_new_matrices(old_matrices))
         return result
 
@@ -196,14 +194,13 @@ def f_lambda(class1, class2, lambda_dict: dict):
             if i not in k:
                 lambda_values[i] = v[0]
         lambda_values[-1] = v[-1]
-        # F_values[tuple(lambda_values)] = get_F(class1, class2, lambda_values)
-        F_values[(k,) + tuple(lambda_values)] = get_F(class1, class2, lambda_values)
+        F_values[tuple(lambda_values)] = get_F(class1, class2, lambda_values)
     if len(F_values) != 0:
         f_max = max(F_values.values())
         for v, f in F_values.items():
             if f == f_max:
                 return v
-    return lambda_dict.keys(), None
+    return None
 
 
 def get_F(class1, class2, lambda_list):
