@@ -101,9 +101,11 @@ def get_lambda_with_any_zero_lambda(class1, class2, t=0):
         for indexes, matrices in old_matrices.items():
             old_matrix_a = matrices[0]
             old_matrix_b = matrices[1]
-            __lambda = lam(old_matrix_a, old_matrix_b)
+            __lambda: np.ndarray = lam(old_matrix_a, old_matrix_b)
             if len(__lambda) > 0 and all(n >= 0 for n in __lambda):
-                return indexes, matrices, __lambda
+                for i in reversed(indexes):
+                    __lambda = np.insert(__lambda, i, [0])
+                return indexes, matrices, __lambda.reshape(len(__lambda), 1)
         new_matrices = {}
         for indexes, matrices in old_matrices.items():
             assert len(matrices[0]) == len(matrices[1]), "error"
@@ -113,11 +115,9 @@ def get_lambda_with_any_zero_lambda(class1, class2, t=0):
 
                 new_matrix_a = np.delete(np.delete(old_matrix_a, i, 1), i, 0)
                 new_matrix_b = np.delete(old_matrix_b, i, 0)
-                key: list = sorted(indexes)
-                key.append(i)
-                key: tuple = tuple(key)
-                if key not in indexes:
-                    new_matrices.update({key: [new_matrix_a, new_matrix_b]})
+                key = (indexes + (i,))
+                new_matrices.update({key: [new_matrix_a, new_matrix_b]})
+        # print(new_matrices)
         return get_lambda(new_matrices)
 # (0, 3, 4, 8)
 # (0, 2, 2, 4)
