@@ -76,7 +76,7 @@ def get_lambda_with_any_zero_lambda(class1, class2):
     def lam(mat_a, mat_b):
         try:
             result = np.linalg.inv(mat_a).dot(mat_b)
-            return result if all(n > 0 for n in result) else None
+            return result if all(n > 0 for n in result[:-1]) else None
         except:
             return None
 
