@@ -1,21 +1,26 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from graham_scan import get_three_nearest_dots, grahamscan
 
-classA = np.array([[0.05, 0.91],
-                   [0.14, 0.96],
-                   [0.16, 0.9],
-                   [0.07, 0.7]])
+all_classA = np.array([[0.05, 0.91],
+                       [0.14, 0.96],
+                       [0.16, 0.9],
+                       [0.07, 0.7],
+                       [0.11, 1.02]
+                       ])
 
-classB = np.array([[0.49, 0.89],
-                   [0.34, 0.81],
-                   [0.36, 0.67],
-                   [0.47, 0.49]])
+all_classB = np.array([[0.49, 0.89],
+                       [0.34, 0.81],
+                       [0.36, 0.67],
+                       [0.47, 0.49],
+                       [0.52, 0.53]
+                       ])
 
-# classA = np.array([[0.05, 0.91],
-#                    [0.14, 0.96]])
-#
-# classB = np.array([[0.49, 0.89],
-#                    [0.34, 0.81]])
+get_nearest_dots = True
+if get_nearest_dots:
+    classA, classB = get_three_nearest_dots(all_classA, all_classB)
+else:
+    classA, classB = all_classA, all_classB
 
 
 def get_scalar_product(class1, class2):
@@ -58,32 +63,6 @@ def get_A_matrix(class1, class2):
     return A
 
 
-def get_lambda_with_zero_zero_lambda(class1, class2):
-    A = get_A_matrix(class1, class2)
-    B = [[]]
-    n = get_n(class1, class2)
-    B[0].extend([1] * n + [0])
-    B = np.asarray(B)
-    B = B.T
-    lambda_ = np.linalg.inv(A).dot(B)
-    return lambda_
-
-
-def get_lambda_with_one_zero_lambda(class1, class2):
-    A = get_A_matrix(class1, class2)
-    B = [[]]
-    n = get_n(class1, class2)
-    lambda_list_one_zero = []
-    B[0].extend([1] * (n - 1) + [0])
-    B = np.asarray(B)
-    B = B.T
-    for i in range(n):
-        new_A = np.delete(np.delete(A, i, 1), i, 0)
-        lambda_list_one_zero.append(np.linalg.inv(new_A).dot(B))
-    for i in lambda_list_one_zero:
-        print(i)
-
-
 def get_lambda_with_any_zero_lambda(class1, class2):
     matrix_a = get_A_matrix(class1, class2)
     y_list = get_y(class1, class2)
@@ -102,7 +81,7 @@ def get_lambda_with_any_zero_lambda(class1, class2):
             return None
 
     # noinspection PyUnreachableCode
-    def get_lambda(old_matrices: dict[tuple: list[np.array, np.array]]) -> dict[tuple: list[np.array, np.array]]:
+    def get_lambda(old_matrices: dict[tuple: list[np.array, np.array]]) -> dict[tuple: np.array]:
         new_lambda_list = {}
         for indexes, matrices in old_matrices.items():
             old_matrix_a = matrices[0]
@@ -119,65 +98,43 @@ def get_lambda_with_any_zero_lambda(class1, class2):
         new_matrices = {}
         for indexes, matrices in old_matrices.items():
             assert len(matrices[0]) == len(matrices[1]), "error"
-            for i in range(len(matrices[0])):
+            for i in range(len(matrices[0]) - 1):
                 old_matrix_a = matrices[0]
                 old_matrix_b = matrices[1]
 
                 new_matrix_a = np.delete(np.delete(old_matrix_a, i, 1), i, 0)
                 new_matrix_b = np.delete(old_matrix_b, i, 0)
-                key = i
-                for k in indexes:
-                    if k >= i:
-                        key += 1
-                key = (indexes + (key,))
+                key = list(indexes)
+                key.pop(i)
+                key = tuple(key)
                 new_matrices.update({key: [new_matrix_a, new_matrix_b]})
-        # print(new_matrices)
         return new_matrices
+
+    _start_indexes = tuple(range(len(matrix_b)))
+
+    def get_indexes_in_start(key: tuple):
+        return tuple(np.unique([key, _start_indexes]))
+
+    def convert_lambda_keys(_lambda: dict[tuple: np.array]):
+        _new_lambda_dict = {}
+        for keys, v in _lambda.items():
+            new_key = []
+            for i in range(n):
+                if i not in keys:
+                    new_key.append(i)
+            new_key = tuple(new_key)
+            _new_lambda_dict[new_key] = v
+        return _new_lambda_dict
 
     def get_result(old_matrices):
         _lambda = get_lambda(old_matrices)
-        result = f_lambda(class1, class2, _lambda)
+        result = f_lambda(class1, class2, convert_lambda_keys(_lambda))
         if result is None:
             return get_result(get_new_matrices(old_matrices))
         return result
 
-    _lambda = get_result({(): [matrix_a, matrix_b]})
+    _lambda = get_result({_start_indexes: [matrix_a, matrix_b]})
     return _lambda
-
-
-def get_lambda_with_two_zero_lambda(class1, class2):
-    A = get_A_matrix(class1, class2)
-    B = [[]]
-    y_list = get_y(class1, class2)
-    n = len(y_list)
-    B[0].extend([1] * (n - 2) + [0])
-    B = np.asarray(B)
-    B = B.T
-    lambda_dict_two_zero = {}
-    for i in range(n):
-        for j in range(n):
-            if i != j and y_list[i] * y_list[j] == -1:
-                print(i, j)
-                new_A = np.delete(np.delete(A, [i, j], 1), [i, j], 0)
-                try:
-                    lambda_dict_two_zero[frozenset([i, j])] = np.linalg.inv(new_A).dot(B)
-                except np.linalg.LinAlgError:
-                    lambda_dict_two_zero[frozenset([i, j])] = None
-
-    F_values = {}
-    for k, v in lambda_dict_two_zero.items():
-        if v is None:
-            continue
-        lambda_values = np.zeros(n + 1)
-        for i in range(n):
-            if i not in k:
-                lambda_values[i] = v[0]
-        lambda_values[-1] = v[-1]
-        F_values[tuple(lambda_values)] = get_F(class1, class2, lambda_values)
-    f_max = max(F_values.values())
-    for v, f in F_values.items():
-        if f == f_max:
-            return v
 
 
 def f_lambda(class1, class2, lambda_dict: dict):
@@ -193,6 +150,7 @@ def f_lambda(class1, class2, lambda_dict: dict):
         for i in range(n):
             if i not in k:
                 lambda_values[i] = v[0]
+                v = v[1:]
         lambda_values[-1] = v[-1]
         F_values[tuple(lambda_values)] = get_F(class1, class2, lambda_values)
     if len(F_values) != 0:
@@ -222,15 +180,17 @@ def get_w_b(class1, class2, lambda_list):
     y_list = get_y(class1, class2)
     n = len(y_list)
     w = [0, 0]
-    print(lambda_list)
     for i in range(n):
         w += lambda_list[i] * y_list[i] * class_list[i]
 
     b_index = 0
-    # b_list = [y_list[b_index]**-1 - np.asarray(w).dot(class_list[b_index]) for b_index in range(n)]
-    # b = np.mean(b_list)
+    l_max = 0
+    for n, l in enumerate(lambda_list):
+        if l > l_max:
+            b_index = n
+            l = l_max
+            break
     b = y_list[b_index] ** -1 - np.asarray(w).dot(class_list[b_index])
-    # b = 0
     return w, b
 
 
@@ -240,25 +200,49 @@ def get_h(w):
 
 if __name__ == '__main__':
     lambda_list = get_lambda_with_any_zero_lambda(classA, classB)
-    print(lambda_list)
 
     x1 = np.linspace(0, 0.5, 4)
 
     ax, fig1 = plt.subplots()
-    for obj in classA:
-        plt.scatter(obj[0], obj[1], c='r')
+    for obj in all_classA:
+        plt.scatter(obj[0], obj[1], c='r', label='class 1')
 
-    for obj in classB:
-        plt.scatter(obj[0], obj[1], c='b')
+    for obj in all_classB:
+        plt.scatter(obj[0], obj[1], c='b', label='class 2')
     w, b = get_w_b(classA, classB, lambda_list)
+    print('h:')
     print(get_h(w))
     h = get_h(w)
     y = - (x1 * w[0] + b) / w[1]
-    plt.plot(x1, y)
+    plt.plot(x1, y, c='k')
     y = - (x1 * w[0] + b + 1) / w[1]
-    plt.plot(x1, y)
+    plt.plot(x1, y, c='k', linestyle='--')
     y = - (x1 * w[0] + b - 1) / w[1]
+    plt.plot(x1, y, c='k', linestyle='--')
+
     plt.grid(True)
-    plt.plot(x1, y)
+    handles, labels = plt.gca().get_legend_handles_labels()
+    by_label = dict(zip(labels, handles))
+    plt.legend(by_label.values(), by_label.keys())
+    plt.xlabel('x')
+    plt.ylabel('y')
+
+    if get_nearest_dots:
+        S = grahamscan(all_classA)
+        for obj in all_classA:
+            plt.scatter(obj[0], obj[1], c='r')
+        for n, i in enumerate(S):
+            plt.plot([all_classA[S[n - 1]][0], all_classA[i][0]], [all_classA[S[n - 1]][1], all_classA[i][1]], c='k')
+
+        S = grahamscan(all_classB)
+        for obj in all_classB:
+            plt.scatter(obj[0], obj[1], c='b')
+        for n, i in enumerate(S):
+            plt.plot([all_classB[S[n - 1]][0], all_classB[i][0]], [all_classB[S[n - 1]][1], all_classB[i][1]], c='k')
+        for obj in classA:
+            plt.scatter(obj[0], obj[1], c='r', s=[80])
+
+        for obj in classB:
+            plt.scatter(obj[0], obj[1], c='b', s=[80])
 
     plt.show()

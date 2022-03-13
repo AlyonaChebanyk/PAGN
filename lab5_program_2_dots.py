@@ -8,6 +8,7 @@ from laba1 import class_colors as cl
 from labellines import labelLine, labelLines
 from itertools import repeat
 
+
 def get_scalar_product(class1, class2):
     list_of_vectors = np.concatenate([class1, class2])
     scalar_products = np.empty([len(list_of_vectors), len(list_of_vectors)])
@@ -69,8 +70,10 @@ def get_lambda_with_one_zero_lambda(class1, class2):
     for i in range(n):
         new_A = np.delete(np.delete(A, i, 1), i, 0)
         lambda_list_one_zero.append(np.linalg.inv(new_A).dot(B))
-    for i in lambda_list_one_zero:
-        print(i)
+    F_values = []
+    for l in lambda_list_one_zero:
+        F_values.append(get_F(class1, class2, l))
+    return lambda_list_one_zero[np.argmax(F_values)]
 
 
 def get_lambda_with_two_zero_lambda(class1, class2):
@@ -88,6 +91,7 @@ def get_lambda_with_two_zero_lambda(class1, class2):
                 new_A = np.delete(np.delete(A, [i, j], 1), [i, j], 0)
                 lambda_dict_two_zero[frozenset([i, j])] = np.linalg.inv(new_A).dot(B)
     F_values = {}
+    print(lambda_dict_two_zero)
     for k, v in lambda_dict_two_zero.items():
         lambda_values = np.zeros(n + 1)
         for i in range(n):
@@ -99,6 +103,20 @@ def get_lambda_with_two_zero_lambda(class1, class2):
     for v, f in F_values.items():
         if f == f_max:
             return v
+
+
+def get_lambda(class1, class2):
+    _lambda = get_lambda_with_zero_zero_lambda(class1, class2)
+    if all(i >= 0 for i in _lambda):
+        return _lambda
+    else:
+        _lambda = get_lambda_with_one_zero_lambda(class1, class2)
+        if all(i >= 0 for i in _lambda):
+            return _lambda
+        else:
+            _lambda = get_lambda_with_two_zero_lambda(class1, class2)
+            if all(i >= 0 for i in _lambda):
+                return _lambda
 
 
 def get_F(class1, class2, lambda_list):
@@ -128,7 +146,7 @@ def get_w_b(class1, class2, lambda_list):
         if l > 0:
             b_index = n
             break
-    b = y_list[b_index]**-1 - np.asarray(w).dot(class_list[b_index])
+    b = y_list[b_index] ** -1 - np.asarray(w).dot(class_list[b_index])
     return w, b
 
 
@@ -142,27 +160,31 @@ classA = np.array([[0.05, 0.91],
 classB = np.array([[0.49, 0.89],
                    [0.34, 0.81]])
 
-lambda_list = get_lambda_with_two_zero_lambda(classA, classB)
+lambda_list = get_lambda(classA, classB)
 
 x1 = np.linspace(0, 0.5, 4)
-# -5.8 x1 + 2 x2 - 0.5 = 0
-# x2 = - (-5.8 x1 - 0.5) / 2
 
 ax, fig1 = plt.subplots()
 for obj in classA:
-    plt.scatter(obj[0], obj[1], c='r')
+    plt.scatter(obj[0], obj[1], c='r', label='class 1')
 
 for obj in classB:
-    plt.scatter(obj[0], obj[1], c='b')
-w, b = get_w_b(classA, classB, lambda_list)
-print(get_h(w))
-h = get_h(w)
-y = - (x1 * w[0] + b) / w[1]
-plt.plot(x1, y)
-y = - (x1 * w[0] + b + 1) / w[1]
-plt.plot(x1, y)
-y = - (x1 * w[0] + b - 1) / w[1]
-plt.grid(True)
-plt.plot(x1, y)
+    plt.scatter(obj[0], obj[1], c='b', label='class 2')
 
+w, b = get_w_b(classA, classB, lambda_list)
+print('h: ', get_h(w))
+y = - (x1 * w[0] + b) / w[1]
+plt.plot(x1, y, c='k')
+y = - (x1 * w[0] + b + 1) / w[1]
+plt.plot(x1, y, c='k', linestyle='--')
+y = - (x1 * w[0] + b - 1) / w[1]
+plt.plot(x1, y, c='k', linestyle='--')
+
+handles, labels = plt.gca().get_legend_handles_labels()
+by_label = dict(zip(labels, handles))
+plt.legend(by_label.values(), by_label.keys())
+plt.xlabel('x')
+plt.ylabel('y')
+
+plt.grid(True)
 plt.show()

@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 def euclid_dist(o1, o2):
@@ -88,51 +87,51 @@ def get_three_nearest_dots(class1, class2):
 
     return class1, class2
 
+# classA = np.array([[0.05, 0.91],
+#                    [0.14, 0.96],
+#                    [0.16, 0.9],
+#                    [0.07, 0.7],
+#                    [0.1, 0.6],
+#                    [0.18, 0.89],
+#                    [0.1, 0.8],
+#                    [0.12, 0.76]])
+#
+# classB = np.array([[0.49, 0.89],
+#                    [0.34, 0.81],
+#                    [0.36, 0.67],
+#                    [0.47, 0.49],
+#                    [0.32, 0.69],
+#                    [0.56, 0.42],
+#                    [0.5, 0.78],
+#                    [0.48, 0.72]])
 
-classA = np.array([[0.05, 0.91],
-                   [0.14, 0.96],
-                   [0.16, 0.9],
-                   [0.07, 0.7],
-                   [0.1, 0.6],
-                   [0.18, 0.89],
-                   [0.1, 0.8],
-                   [0.12, 0.76]])
-
-classB = np.array([[0.49, 0.89],
-                   [0.34, 0.81],
-                   [0.36, 0.67],
-                   [0.47, 0.49],
-                   [0.32, 0.69],
-                   [0.56, 0.42],
-                   [0.5, 0.78],
-                   [0.48, 0.72]])
-
-S = grahamscan(classA)
-
-ax, fig1 = plt.subplots()
-for obj in classA:
-    plt.scatter(obj[0], obj[1], c='r')
-
-for n, i in enumerate(S):
-    # print([classA[S[n - 1]][0], classA[i][0]], [classA[S[n - 1]][1], classA[i][1]])
-    plt.plot([classA[S[n - 1]][0], classA[i][0]], [classA[S[n - 1]][1], classA[i][1]], c='k')
-
-S = grahamscan(classB)
-
-for obj in classB:
-    plt.scatter(obj[0], obj[1], c='b')
-
-for n, i in enumerate(S):
-    # print([classB[S[n - 1]][0], classB[i][0]], [classB[S[n - 1]][1], classB[i][1]])
-    plt.plot([classB[S[n - 1]][0], classB[i][0]], [classB[S[n - 1]][1], classB[i][1]], c='k')
-
-classA_3, classB_3 = get_three_nearest_dots(classA, classB)
-print(classA_3)
-print(classB_3)
-for obj in classA_3:
-    plt.scatter(obj[0], obj[1], c='r', s=[100])
-
-for obj in classB_3:
-    plt.scatter(obj[0], obj[1], c='b', s=[100])
-plt.grid(True)
-plt.show()
+# S = grahamscan(classA)
+#
+# ax, fig1 = plt.subplots()
+# for obj in classA:
+#     plt.scatter(obj[0], obj[1], c='r')
+#
+# for n, i in enumerate(S):
+#     # print([classA[S[n - 1]][0], classA[i][0]], [classA[S[n - 1]][1], classA[i][1]])
+#     plt.plot([classA[S[n - 1]][0], classA[i][0]], [classA[S[n - 1]][1], classA[i][1]], c='k')
+#
+# S = grahamscan(classB)
+#
+# for obj in classB:
+#     plt.scatter(obj[0], obj[1], c='b')
+#
+# for n, i in enumerate(S):
+#     # print([classB[S[n - 1]][0], classB[i][0]], [classB[S[n - 1]][1], classB[i][1]])
+#     plt.plot([classB[S[n - 1]][0], classB[i][0]], [classB[S[n - 1]][1], classB[i][1]], c='k')
+#
+# classA_3, classB_3 = get_three_nearest_dots(classA, classB)
+#
+# print(classA_3)
+# print(classB_3)
+# for obj in classA_3:
+#     plt.scatter(obj[0], obj[1], c='r', s=[100])
+#
+# for obj in classB_3:
+#     plt.scatter(obj[0], obj[1], c='b', s=[100])
+# plt.grid(True)
+# plt.show()
