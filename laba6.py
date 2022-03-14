@@ -1,10 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-class1 = np.array([[0, 1],
+class1 = np.array([[0, 0],
                    [2, 1]])
 
-class2 = np.array([[1, 1]])
+class2 = np.array([[1, 0]])
 
 
 def get_n(class1, class2):
@@ -172,20 +172,30 @@ def get_f_x(class1, class2, x_list):
     for i_x in x_list:
         f_t = 0
         for i_n in range(n):
-            f_t += y[i_n] * _lambda_list[i_n] * (list_of_vectors[i_n].dot(i_x) + 1) ** m - \
+            f_t += y[i_n] * _lambda_list[i_n] * (
+                        list_of_vectors[i_n][0]*i_x + list_of_vectors[i_n][1]*i_x + 1) ** m - \
                    y[i_n] * _lambda_list[i_n] * kernel[0][i_n]
         f_t += 1
         f_list.append(f_t)
     return f_list
 
+
 # print(get_A_matrix(class1, class2))
-x = list(np.arange(-2, 4, 0.1))
+x = list(np.arange(-2, 5, 0.1))
 y = get_f_x(class1, class2, x)
 # y = [-e * e - 2 * e + 1 for e in x]
 
-plt.scatter(0, 1)
-plt.scatter(2, 1)
-plt.scatter(1, 1)
+for obj in class1:
+    plt.scatter(obj[0], obj[1], c='r', label='class 1')
+
+for obj in class2:
+    plt.scatter(obj[0], obj[1], c='b', label='class 2')
+
+handles, labels = plt.gca().get_legend_handles_labels()
+by_label = dict(zip(labels, handles))
+plt.legend(by_label.values(), by_label.keys())
+plt.xlabel('x')
+plt.ylabel('y')
 plt.plot(x, y)
 plt.grid(True)
 plt.show()
