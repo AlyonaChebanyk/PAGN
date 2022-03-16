@@ -1,12 +1,15 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
-class1 = np.array([[0, 0],
-                   [2, 1]])
+class1 = np.array([[-1, 0],
+                   [2, 0]])
 
-class2 = np.array([[1, 0]])
+class2 = np.array([[1, 0],
+                   [0, 0],
+                   [3, 0]])
 
-
+_3d = False
 def get_n(class1, class2):
     n_a = len(class1)
     n_b = len(class2)
@@ -169,33 +172,67 @@ def get_f_x(class1, class2, x_list):
     kernel = get_kernel(class1, class2)
     _lambda_list = get_lambda_with_any_zero_lambda(class1, class2)
     f_list = []
-    for i_x in x_list:
-        f_t = 0
-        for i_n in range(n):
-            f_t += y[i_n] * _lambda_list[i_n] * (
-                        list_of_vectors[i_n][0]*i_x + list_of_vectors[i_n][1]*i_x + 1) ** m - \
-                   y[i_n] * _lambda_list[i_n] * kernel[0][i_n]
-        f_t += 1
-        f_list.append(f_t)
+    if not _3d:
+        for i_x in x_list:
+            f_t = 0
+            for i_n in range(n):
+                f_t += y[i_n] * _lambda_list[i_n] * (list_of_vectors[i_n][0] * i_x + 1) ** m - \
+                       y[i_n] * _lambda_list[i_n] * kernel[0][i_n]
+            f_t += 1
+            f_list.append(f_t)
+    else:
+        f_list = np.empty(shape=(len(x_list), len(x_list)))
+        for n_i_x, i_x in enumerate(x_list):
+            for n_j_x, j_x in enumerate(x_list):
+                f_t = 0
+                for i_n in range(n):
+                    f_t += y[i_n] * _lambda_list[i_n] * (list_of_vectors[i_n].dot([[i_x], [j_x]]) + 1) ** m - \
+                           y[i_n] * _lambda_list[i_n] * kernel[0][i_n]
+                f_t += 1
+                f_list[n_i_x][n_j_x] = f_t
     return f_list
 
 
-# print(get_A_matrix(class1, class2))
-x = list(np.arange(-2, 5, 0.1))
-y = get_f_x(class1, class2, x)
-# y = [-e * e - 2 * e + 1 for e in x]
+if not _3d:
+    # print(get_A_matrix(class1, class2))
+    x = np.arange(-1.5, 4, 0.1)
+    y = get_f_x(class1, class2, x)
+    # y = [-e * e - 2 * e + 1 for e in x]
 
-for obj in class1:
-    plt.scatter(obj[0], obj[1], c='r', label='class 1')
+    for obj in class1:
+        plt.scatter(obj[0], obj[1], c='r', label='class 1')
 
-for obj in class2:
-    plt.scatter(obj[0], obj[1], c='b', label='class 2')
+    for obj in class2:
+        plt.scatter(obj[0], obj[1], c='b', label='class 2')
 
-handles, labels = plt.gca().get_legend_handles_labels()
-by_label = dict(zip(labels, handles))
-plt.legend(by_label.values(), by_label.keys())
-plt.xlabel('x')
-plt.ylabel('y')
-plt.plot(x, y)
-plt.grid(True)
-plt.show()
+    handles, labels = plt.gca().get_legend_handles_labels()
+    by_label = dict(zip(labels, handles))
+    plt.legend(by_label.values(), by_label.keys())
+    plt.xlabel('x')
+    plt.ylabel('y')
+    plt.plot(x, y)
+    plt.plot(x, np.array(y)+1)
+    plt.plot(x, np.array(y)-1)
+    plt.grid(True)
+    plt.show()
+else:
+    x = list(np.arange(-1.5, 4, 0.1))
+    y = get_f_x(class1, class2, x)
+    fig = plt.figure()
+    ax = fig.add_subplot(projection='3d')
+    for obj in class1:
+        ax.scatter(obj[0], obj[1], 0, c='r', label='class 1')
+
+    for obj in class2:
+        ax.scatter(obj[0], obj[1], 0, c='b', label='class 2')
+    handles, labels = plt.gca().get_legend_handles_labels()
+    by_label = dict(zip(labels, handles))
+    ax.legend(by_label.values(), by_label.keys())
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+    ax.set_zlabel('z')
+    x1, x2 = np.meshgrid(x, x)
+    ax.plot_surface(x1, x2, y, alpha=0.7)
+    ax.plot_surface(x1, x2, y+1, alpha=0.7)
+    ax.plot_surface(x1, x2, y-1, alpha=0.7)
+    plt.show()
